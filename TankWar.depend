@@ -1,0 +1,16 @@
+# depslib dependency file v1.0
+1743452240 source:d:\tankwar\src\core\engine.cpp
+	"Engine.h"
+	<iostream>
+
+1743452771 d:\tankwar\src\core\engine.h
+	"SDL.h"
+	"SDL_image.h"
+
+1744155477 source:d:\tankwar\main.cpp
+	<iostream>
+	<SDL.h>
+	<SDL_image.h>
+	<vector>
+	<algorithm>
+
