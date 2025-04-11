@@ -33,6 +33,17 @@
 			<Add option="-fexceptions" />
 		</Compiler>
 		<Unit filename="main.cpp" />
+		<Unit filename="src/Bullet.cpp" />
+		<Unit filename="src/Bullet.h" />
+		<Unit filename="src/Constants.h" />
+		<Unit filename="src/EnemyTank.cpp" />
+		<Unit filename="src/EnemyTank.h" />
+		<Unit filename="src/Game.cpp" />
+		<Unit filename="src/Game.h" />
+		<Unit filename="src/PlayerTank.cpp" />
+		<Unit filename="src/PlayerTank.h" />
+		<Unit filename="src/Wall.cpp" />
+		<Unit filename="src/Wall.h" />
 		<Extensions />
 	</Project>
 </CodeBlocks_project_file>
