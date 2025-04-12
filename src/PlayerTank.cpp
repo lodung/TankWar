@@ -1,65 +1,90 @@
-#include "playertank.h"
-#include "constants.h"
-#include <SDL.h>
-#include <algorithm>
-PlayerTank::PlayerTank(int startX, int startY) {
-    x = startX;
-    y = startY;
-    rect = {x, y, TILE_SIZE, TILE_SIZE};
-    dirX = 0;
-    dirY = -1;
-}
+    #include "playertank.h"
+    #include "constants.h"
+    #include <SDL.h>
+    #include <SDL_image.h>
+    #include <algorithm>
 
-// Constructor mặc định
-PlayerTank::PlayerTank() {}
+    void PlayerTank::calculateAngle() {
+        if (dirX > 0 ) {      // Phải
+            angle = 90.0;
+        } else if (dirX < 0) { // Trái
+            angle = 270.0;
+        } else if (dirY < 0) { // Lên
+            angle = 0.0;
+        } else if (dirY > 0 ) {  // Xuống
+            angle = 180.0;
+        }
+    };
+    PlayerTank::PlayerTank(int startX, int startY, SDL_Renderer* renderer) {
+        x = startX;
+        y = startY;
+        rect = {x, y, TILE_SIZE, TILE_SIZE};
+        tankTexture = IMG_LoadTexture(renderer,"image/Tank.png");
+        dirX = 0;
+        dirY = -1;
+    }
 
-// Phương thức di chuyển
-void PlayerTank::move(int dx, int dy, const std::vector<Wall>& walls) {
-    int newX = x + dx;
-    int newY = y + dy;
-    this->dirX = dx;
-    this->dirY = dy;
+    // Constructor mặc định
+    PlayerTank::PlayerTank() {}
 
-    SDL_Rect newRect = {newX, newY, TILE_SIZE, TILE_SIZE};
-    for (const auto& wall : walls) {
-        if (wall.active && SDL_HasIntersection(&newRect, &wall.rect)) {
-            return;
+    // Phương thức di chuyển
+    void PlayerTank::move(int dx, int dy, const std::vector<Wall>& walls, const std::vector<Stone>& stones) {
+        int newX = x + dx;
+        int newY = y + dy;
+        this->dirX = dx;
+        this->dirY = dy;
+        calculateAngle();
+        SDL_Rect newRect = {newX, newY, TILE_SIZE, TILE_SIZE};
+        for (const auto& wall : walls) {
+            if (wall.active && SDL_HasIntersection(&newRect, &wall.rect)) {
+                return; //CHỐNG VA TƯỜNG
+            }
+        }
+        for (const auto& stone : stones) {
+            if (stone.active && SDL_HasIntersection(&newRect, &stone.rect)) {
+                return; //CHỐNG VA TƯỜNG
+            }
+        }
+
+        if (newX >= TILE_SIZE && newX <= SCREEN_WIDTH - TILE_SIZE * 2 &&
+            newY >= TILE_SIZE && newY <= SCREEN_HEIGHT - TILE_SIZE * 2) {
+            x = newX;
+            y = newY;
+            rect.x = x;
+            rect.y = y;
         }
     }
 
-    if (newX >= TILE_SIZE && newX <= SCREEN_WIDTH - TILE_SIZE * 2 &&
-        newY >= TILE_SIZE && newY <= SCREEN_HEIGHT - TILE_SIZE * 2) {
-        x = newX;
-        y = newY;
-        rect.x = x;
-        rect.y = y;
+    void PlayerTank::shoot(SDL_Renderer* renderer) {
+        bullets.push_back(Bullet(
+            x + TILE_SIZE / 2 - 5,
+            y + TILE_SIZE / 2 - 5,
+            dirX, dirY,renderer
+        ));
     }
-}
-
-void PlayerTank::shoot() {
-    bullets.push_back(Bullet(
-        x + TILE_SIZE / 2 - 5,
-        y + TILE_SIZE / 2 - 5,
-        dirX, dirY
-    ));
-}
-void PlayerTank::updateBullets() {
-    bullets.erase(
-        std::remove_if(
-            bullets.begin(),
-            bullets.end(),
-            [](Bullet& b) { return !b.active; }
-        ),
-        bullets.end()
-    );
-    for (auto& bullet : bullets) {
-        bullet.move();
+    void PlayerTank::updateBullets() {
+        bullets.erase(
+            std::remove_if(
+                bullets.begin(),
+                bullets.end(),
+                [](Bullet& b) { return !b.active; }
+            ),
+            bullets.end()
+        );
+        for (auto& bullet : bullets) {
+            bullet.move();
+        }
     }
-}
-void PlayerTank::render(SDL_Renderer* renderer) {
-    SDL_SetRenderDrawColor(renderer, 0, 255, 0, 255);
-    SDL_RenderFillRect(renderer, &rect);
-    for (auto& bullet : bullets) {
-        bullet.render(renderer);
+    void PlayerTank::render(SDL_Renderer* renderer) {
+        if (tankTexture) {
+            // Tính pivot là tâm của xe
+            pivot.x = rect.w / 2;
+            pivot.y = rect.h / 2;
+            // Render với góc xoay và pivot (xoay theo hướng di chuyển)
+            SDL_RenderCopyEx(renderer, tankTexture, NULL, &rect, angle, &pivot, SDL_FLIP_NONE);
+        }
+        //SDL_RenderCopy(renderer, tankTexture, NULL, &rect);
+        for (auto& bullet : bullets) {
+            bullet.render(renderer);
+        }
     }
-}

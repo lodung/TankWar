@@ -1,18 +1,32 @@
 #include "Wall.h"
 #include "Constants.h"
 #include <SDL.h>
-
-// Constructor
-Wall::Wall(int startX, int startY) {
+#include <SDL_image.h>
+SDL_Texture *wallTexture;
+SDL_Texture *stoneTexture;
+Wall::Wall(int startX, int startY,SDL_Renderer *renderer) {
     x = startX;
     y = startY;
     active = true;
-    rect = {x, y, TILE_SIZE, TILE_SIZE};
+    wallTexture = IMG_LoadTexture(renderer,"image/wall.png");
+    rect = {x, y, TILE_SIZEm, TILE_SIZEm};
 }
 
 void Wall::render(SDL_Renderer* renderer) {
     if (active) {
-        SDL_SetRenderDrawColor(renderer, 150, 75, 0, 255);
-        SDL_RenderFillRect(renderer, &rect);
+        SDL_RenderCopy(renderer, wallTexture, NULL,&rect);
+    }
+}
+Stone::Stone(int startX, int startY,SDL_Renderer *renderer) {
+    x = startX;
+    y = startY;
+    active = true;
+    stoneTexture = IMG_LoadTexture(renderer,"image/stone.png");
+    rect = {x, y, TILE_SIZEm, TILE_SIZEm};
+}
+
+void Stone::render(SDL_Renderer* renderer) {
+    if (active) {
+        SDL_RenderCopy(renderer, stoneTexture, NULL,&rect);
     }
 }

@@ -1,14 +1,29 @@
 #include "bullet.h"
 #include "constants.h"
-
-Bullet::Bullet(int startX, int startY, int dirX, int dirY) {
+#include <SDL.h>
+#include <SDL_image.h>
+SDL_Texture *bulletTexture;
+Bullet::Bullet(int startX, int startY, int dirX, int dirY, SDL_Renderer* renderer) {
     x = startX;
     y = startY;
     dx = dirX;
     dy = dirY;
+    bulletTexture = IMG_LoadTexture(renderer,"image/bullet.jpg");
     active = true;
-    rect = {x, y, 8, 8};
+    rect = {x, y, 9, 9};
+    calculateAngle();
 }
+void Bullet::calculateAngle() {
+        if (dx > 0 ) {      // Phải
+            angle = 90.0;
+        } else if (dx < 0) { // Trái
+            angle = 270.0;
+        } else if (dy < 0) { // Lên
+            angle = 0.0;
+        } else if (dy > 0 ) {  // Xuống
+            angle = 180.0;
+        }
+    };
 
 void Bullet::move() {
     x += dx;
@@ -23,7 +38,9 @@ void Bullet::move() {
 
 void Bullet::render(SDL_Renderer* renderer) {
     if (active) {
-        SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
-        SDL_RenderFillRect(renderer, &rect);
+        //SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+        //SDL_RenderFillRect(renderer, &rect);
+        //SDL_RenderCopy(renderer, bulletTexture, NULL, &rect);
+        SDL_RenderCopyEx(renderer, bulletTexture, NULL, &rect, angle, nullptr, SDL_FLIP_NONE);
     }
 }
