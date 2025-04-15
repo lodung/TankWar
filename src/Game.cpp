@@ -4,8 +4,9 @@
 #include <cstdlib>
 #include <fstream>
 #include <SDL_mixer.h>
-
-Game::Game() : enemyNumber(4) {
+#include <ctime>
+Game::Game() : enemyNumber(1) {
+    srand(time(0));
     running = true;
     if (SDL_Init(SDL_INIT_AUDIO) < 0 || Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048) < 0) {
     std::cerr << "SDL_mixer could not initialize! Error: " << Mix_GetError() << std::endl;
@@ -38,32 +39,35 @@ Game::Game() : enemyNumber(4) {
     }
     Mix_VolumeMusic(40);
     generateWalls();
-    player = PlayerTank(((MAP_WIDTH - 1) / 2) * TILE_SIZE, (MAP_HEIGHT - 2) * TILE_SIZE,renderer);
+    player = PlayerTank(5 * TILE_SIZE, 13 * TILE_SIZE,renderer, "image/Tank.png");
+    player2 = PlayerTank(9 * TILE_SIZE,  13* TILE_SIZE,renderer, "image/Player2.png");
     spawnEnemies();
 }
 
 void Game::generateWalls() {
     walls.clear();
     stones.clear();
-    char Map[26][26];
+    char Map[28][27];
     std::ifstream file("map/1.txt");
-    for(int i= 0; i<26; i++)
+    for(int i= 1; i<=27; i++)
     {
-        for (int j = 0 ; j<26; j++){
+        for (int j = 1; j<=26; j++){
             file >> Map[i][j];
         }
     }
     file.close();
-    for (int i = 0; i<26; i++){
-        for(int j = 0; j<26; j++){
+    for (int i = 1; i<=27; i++){
+        for(int j = 0; j<=26 ;j++) {
             if(Map[i][j] == '#'){
-                Wall w = Wall((j+2)*TILE_SIZEm,(i+1)*TILE_SIZEm,renderer);
+                Wall w = Wall((j+1)*TILE_SIZEm,(i+1)*TILE_SIZEm,renderer);
                 walls.push_back(w);
             }
             if(Map[i][j] == '@'){
-                Stone k = Stone((j+2)*TILE_SIZEm,(i+1)*TILE_SIZEm,renderer);
+                Stone k = Stone((j+1)*TILE_SIZEm,(i+1)*TILE_SIZEm,renderer);
                 stones.push_back(k);
             }
+            //if(Map[i][j] == '%')
+                //Leaf k = Leaf((j+2)*TILE_SIZEm,(i+1)*TILE_SIZEm,renderer);
         }
     }
 
@@ -84,29 +88,81 @@ void Game::spawnEnemies() {
                 }
             }
         }
-        enemies.push_back(EnemyTank(ex, ey));
+        enemies.push_back(EnemyTank(ex, ey,renderer));
     }
 }
-void Game::handleEvents() {
+        void Game::handleEvents() {
+            SDL_Event event;
+            while (SDL_PollEvent(&event)) {
+                if (event.type == SDL_QUIT) {
+                    running = false;
+                } else if (event.type == SDL_KEYDOWN) {
+                    switch (event.key.keysym.sym) {
+                        case SDLK_UP: player.move(0, -10, walls, stones); break;
+                        case SDLK_DOWN: player.move(0, 10, walls, stones); break;
+                        case SDLK_LEFT: player.move(-10, 0, walls, stones); break;
+                        case SDLK_RIGHT: player.move(10, 0, walls, stones); break;
+                        case SDLK_SPACE: player.shoot(renderer); break;
+                        case SDLK_ESCAPE: running = false;
+                    }
+                }
+                if (event.type == SDL_KEYDOWN) {
+                switch (event.key.keysym.sym) {
+                        case SDLK_w: player2.move(0, -10, walls, stones); break;
+                        case SDLK_s: player2.move(0, 10, walls, stones); break;
+                        case SDLK_a: player2.move(-10, 0, walls, stones); break;
+                        case SDLK_d: player2.move(10, 0, walls, stones); break;
+                        case SDLK_l: player2.shoot(renderer); break;
+                }
+            }
+            }
+};
+/*void Game::handleEvents() {
     SDL_Event event;
     while (SDL_PollEvent(&event)) {
         if (event.type == SDL_QUIT) {
             running = false;
-        } else if (event.type == SDL_KEYDOWN) {
-            switch (event.key.keysym.sym) {
-                case SDLK_UP: player.move(0, -10, walls, stones); break;
-                case SDLK_DOWN: player.move(0, 10, walls, stones); break;
-                case SDLK_LEFT: player.move(-10, 0, walls, stones); break;
-                case SDLK_RIGHT: player.move(10, 0, walls, stones); break;
-                case SDLK_SPACE: player.shoot(renderer); break;
-                case SDLK_ESCAPE: running = false;
-            }
         }
     }
-};
+    const Uint8* keystates = SDL_GetKeyboardState(nullptr); // Lấy trạng thái của tất cả các phím
+
+    // Di chuyển Player 1
+    if (keystates[SDL_SCANCODE_UP]) {
+        player.move(0, -10, walls, stones);  // Di chuyển lên
+    }
+    if (keystates[SDL_SCANCODE_DOWN]) {
+        player.move(0, 10, walls, stones);   // Di chuyển xuống
+    }
+    if (keystates[SDL_SCANCODE_LEFT]) {
+        player.move(-10, 0, walls, stones);  // Di chuyển sang trái
+    }
+    if (keystates[SDL_SCANCODE_RIGHT]) {
+        player.move(10, 0, walls, stones);   // Di chuyển sang phải
+    }
+    if (keystates[SDL_SCANCODE_SPACE]) {
+        player.shoot(renderer);  // Bắn đạn
+    }
+
+    // Di chuyển Player 2
+    if (keystates[SDL_SCANCODE_W]) {
+        player2.move(0, -10, walls, stones); // Di chuyển lên
+    }
+    if (keystates[SDL_SCANCODE_S]) {
+        player2.move(0, 10, walls, stones);  // Di chuyển xuống
+    }
+    if (keystates[SDL_SCANCODE_A]) {
+        player2.move(-10, 0, walls, stones); // Di chuyển sang trái
+    }
+    if (keystates[SDL_SCANCODE_D]) {
+        player2.move(10, 0, walls, stones);  // Di chuyển sang phải
+    }
+    if (keystates[SDL_SCANCODE_L]) {
+        player2.shoot(renderer);  // Bắn đạn
+    }
+}*/
+
 void Game::update() {
     player.updateBullets();
-
     for (auto& enemy : enemies) {
         enemy.moveTowardPlayer(player.x,player.y,walls,stones);
         enemy.updateBullets();
@@ -121,6 +177,21 @@ void Game::update() {
             }
         }
     }
+
+    //kiểm tra va chạm đạn
+   for(auto& enemy: enemies){
+     for(auto& bullet : player.bullets){
+        for (auto& bullet2 : enemy.bullets){
+            if (bullet.active && SDL_HasIntersection(&bullet.rect, &bullet2.rect)) {
+            bullet.active = false;
+            bullet2.active =false;
+            break;
+
+            }
+        }
+     }
+   }
+
     for (auto& bullet : player.bullets) {
         for (auto& stone : stones) {
             if (stone.active && SDL_HasIntersection(&bullet.rect, &stone.rect)) {
@@ -129,6 +200,17 @@ void Game::update() {
                 break;
             }
         }
+    }
+    for(auto& enemy : enemies){
+    for (auto& bullet : enemy.bullets) {
+        for (auto& stone : stones) {
+            if (stone.active && SDL_HasIntersection(&bullet.rect, &stone.rect)) {
+                stone.active = true;
+                bullet.active = false;
+                break;
+            }
+        }
+    }
     }
     // stones moi them vao
     for (auto& bullet : player.bullets) {
@@ -190,7 +272,7 @@ void Game::render() {
 
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
     for (int i = 1; i < MAP_HEIGHT-1; ++i) {
-    for (int j = 1; j < MAP_WIDTH-3; ++j) {
+    for (int j = 1; j < MAP_WIDTH-4; ++j) {
         SDL_Rect tile = { j * TILE_SIZE, i * TILE_SIZE, TILE_SIZE, TILE_SIZE };
         SDL_RenderFillRect(renderer, &tile);
     }
@@ -199,6 +281,7 @@ void Game::render() {
     for (auto& wall : walls) wall.render(renderer);
     for (auto& stone : stones) stone.render(renderer);
     player.render(renderer);
+    player2.render(renderer);
     for (auto& enemy : enemies) enemy.render(renderer);
 
     SDL_RenderPresent(renderer);

@@ -1,50 +1,73 @@
 #include "EnemyTank.h"
 #include <algorithm>
 #include <SDL_image.h>
-EnemyTank::EnemyTank(int startX, int startY) {
+EnemyTank::EnemyTank(int startX, int startY,SDL_Renderer *renderer) {
     moveDelay = 15;
     shootDelay = 5;
     x = startX;
     y = startY;
+    enemyTexture = IMG_LoadTexture(renderer, "image/enemy1.png");
     rect = {x, y, TILE_SIZE, TILE_SIZE};
     dirX = 0;
     dirY = 1;
     active = true;
 }
-
-void EnemyTank::moveTowardPlayer(int playerX, int playerY, const vector<Wall>& walls,const vector<Stone>& stones) {
+void EnemyTank::calculateAngle() {
+        if (dirX > 0 ) {      // Phải
+            angle = 90.0;
+        } else if (dirX < 0) { // Trái
+            angle = 270.0;
+        } else if (dirY < 0) { // Lên
+            angle = 0.0;
+        } else if (dirY > 0 ) {  // Xuống
+            angle = 180.0;
+        }
+    };
+void EnemyTank::moveTowardPlayer(int playerX, int playerY, const vector<Wall>& walls, const vector<Stone>& stones) {
     if (--moveDelay > 0) return;
 
-    moveDelay =100; // delay càng cao thì tank càng chậm
+    moveDelay = 1000;
 
-    int dx = 0, dy = 0;
+    int dxPrimary = 0, dyPrimary = 0;
+    int dxSecondary = 0, dySecondary = 0;
 
-    // Ưu tiên hướng có khoảng cách lớn hơn
     if (abs(playerX - x) > abs(playerY - y)) {
-        dx = (playerX > x) ? 5 : -5;
+        dxPrimary = (playerX > x) ? 5 : -5;
+        dySecondary = (playerY > y) ? 5 : (playerY < y ? -5 : 0);
     } else {
-        dy = (playerY > y) ? 5 : -5;
+        dyPrimary = (playerY > y) ? 5 : -5;
+        dxSecondary = (playerX > x) ? 5 : (playerX < x ? -5 : 0);
     }
 
-    // kiểm tra va chạm với tường
-    int newX = x + dx;
-    int newY = y + dy;
-    SDL_Rect newRect = { newX, newY, TILE_SIZE, TILE_SIZE };
+    // Thử di chuyển theo hướng chính
+    if (canMove(x + dxPrimary, y + dyPrimary, walls, stones)) {
+        applyMove(dxPrimary, dyPrimary);
+        return;
+    }
 
+    // Nếu hướng chính bị chặn, thử hướng phụ
+    if (canMove(x + dxSecondary, y + dySecondary, walls, stones)) {
+        applyMove(dxSecondary, dySecondary);
+        return;
+    }
+
+    // Nếu cả 2 hướng bị chặn, không di chuyển
+}
+
+bool EnemyTank::canMove(int newX, int newY, const vector<Wall>& walls, const vector<Stone>& stones) {
+    SDL_Rect newRect = { newX, newY, TILE_SIZE, TILE_SIZE };
     for (const auto& wall : walls) {
-        if (wall.active && SDL_HasIntersection(&newRect, &wall.rect)) {
-            return; // va tường, không di chuyển
-        }
+        if (wall.active && SDL_HasIntersection(&newRect, &wall.rect)) return false;
     }
     for (const auto& stone : stones) {
-        if (stone.active && SDL_HasIntersection(&newRect, &stone.rect)) {
-            return; // va tường, không di chuyển
-        }
+        if (stone.active && SDL_HasIntersection(&newRect, &stone.rect)) return false;
     }
+    return true;
+}
 
-    // cập nhật vị trí
-    x = newX;
-    y = newY;
+void EnemyTank::applyMove(int dx, int dy) {
+    x += dx;
+    y += dy;
     rect.x = x;
     rect.y = y;
     dirX = dx;
@@ -54,6 +77,7 @@ void EnemyTank::moveTowardPlayer(int playerX, int playerY, const vector<Wall>& w
     else if (dx > 0) dir = LEFT;
     else if (dy < 0) dir = DOWN;
     else if (dy > 0) dir = UP;
+    calculateAngle();
 }
 
 
@@ -80,7 +104,8 @@ void EnemyTank::updateBullets() {
 }
 
 void EnemyTank::render(SDL_Renderer* renderer) {
-    SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
-    SDL_RenderFillRect(renderer, &rect);
+    //SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
+    //SDL_RenderFillRect(renderer, &rect);
+    SDL_RenderCopyEx (renderer, enemyTexture, NULL, &rect, angle, nullptr, SDL_FLIP_NONE);
         for (auto &bullet : bullets) bullet.render(renderer);
 }

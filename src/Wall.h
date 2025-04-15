@@ -2,7 +2,6 @@
 #define WALL_H
 
 #include <SDL.h>
-const int TILE_SIZEm = 20;
 class Wall {
 public:
     int x, y;

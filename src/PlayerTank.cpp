@@ -1,5 +1,7 @@
     #include "playertank.h"
     #include "constants.h"
+    #include <iostream>
+    #include <cstring>
     #include <SDL.h>
     #include <SDL_image.h>
     #include <algorithm>
@@ -15,13 +17,13 @@
             angle = 180.0;
         }
     };
-    PlayerTank::PlayerTank(int startX, int startY, SDL_Renderer* renderer) {
+    PlayerTank::PlayerTank(int startX, int startY, SDL_Renderer* renderer, const std::string& texturePath) {
         x = startX;
         y = startY;
         rect = {x, y, TILE_SIZE, TILE_SIZE};
-        tankTexture = IMG_LoadTexture(renderer,"image/Tank.png");
+        tankTexture = IMG_LoadTexture(renderer,texturePath.c_str());
         dirX = 0;
-        dirY = -1;
+        dirY = 1;
     }
 
     // Constructor mặc định
@@ -46,7 +48,7 @@
             }
         }
 
-        if (newX >= TILE_SIZE && newX <= SCREEN_WIDTH - TILE_SIZE * 2 &&
+        if (newX >= TILE_SIZE && newX <= SCREEN_WIDTH - TILE_SIZE * 4 - TILE_SIZEm  &&
             newY >= TILE_SIZE && newY <= SCREEN_HEIGHT - TILE_SIZE * 2) {
             x = newX;
             y = newY;
@@ -78,10 +80,10 @@
     void PlayerTank::render(SDL_Renderer* renderer) {
         if (tankTexture) {
             // Tính pivot là tâm của xe
-            pivot.x = rect.w / 2;
-            pivot.y = rect.h / 2;
+            //pivot.x = rect.w / 2;
+            //pivot.y = rect.h / 2;
             // Render với góc xoay và pivot (xoay theo hướng di chuyển)
-            SDL_RenderCopyEx(renderer, tankTexture, NULL, &rect, angle, &pivot, SDL_FLIP_NONE);
+            SDL_RenderCopyEx(renderer, tankTexture, NULL, &rect, angle, nullptr, SDL_FLIP_NONE);
         }
         //SDL_RenderCopy(renderer, tankTexture, NULL, &rect);
         for (auto& bullet : bullets) {

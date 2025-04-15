@@ -2,6 +2,7 @@
 #include <SDL.h>
 #include <SDL_image.h>
 #include <vector>
+#include <string>
 #include <algorithm>
 #include "src/Game.h"
 using namespace std;

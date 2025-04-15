@@ -18,6 +18,7 @@ public:
     std::vector<Wall> walls;
     std::vector<Stone> stones;
     PlayerTank player;
+    PlayerTank player2;
     int enemyNumber;
     std::vector<EnemyTank> enemies;
     Game();

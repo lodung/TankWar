@@ -10,7 +10,7 @@ class EnemyTank {
 public:
     int x, y;
     int dirX, dirY;
-    SDL_Point pivot;
+    double angle;
     int moveDelay, shootDelay;
     SDL_Rect rect;
     SDL_Texture *enemyTexture;
@@ -18,8 +18,11 @@ public:
     vector<Bullet> bullets;
     enum Direction { UP, DOWN, LEFT, RIGHT };
     Direction dir;
-    EnemyTank(int startX, int startY);
+    EnemyTank(int startX, int startY,SDL_Renderer *renderer);
     void moveTowardPlayer(int playerX, int playerY, const vector<Wall>& walls,const vector<Stone>& stones);
+    bool canMove(int newX, int newY, const vector<Wall>& walls, const vector<Stone>& stones);
+    void applyMove(int dx, int dy);
+    void calculateAngle();
     void shoot(SDL_Renderer* renderer);
     void updateBullets();
     void render(SDL_Renderer* renderer);
