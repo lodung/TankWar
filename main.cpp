@@ -5,9 +5,10 @@
 #include <string>
 #include <algorithm>
 #include "src/Game.h"
-using namespace std;
 
 int main(int argc, char* argv[]) {
+    //SDL_Texture* backgroundTexture = IMG_LoadTexture(renderer, "image/background.png");
+
     Game game;
     if (game.running) {
         game.run();

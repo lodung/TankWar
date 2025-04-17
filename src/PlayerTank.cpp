@@ -1,11 +1,12 @@
     #include "playertank.h"
     #include "constants.h"
     #include <iostream>
-    #include <cstring>
+    #include <string>
     #include <SDL.h>
     #include <SDL_image.h>
     #include <algorithm>
-
+    Uint32 lastShootTime = 0;
+    const Uint32 shootCooldown = 300;
     void PlayerTank::calculateAngle() {
         if (dirX > 0 ) {      // Phải
             angle = 90.0;
@@ -21,9 +22,11 @@
         x = startX;
         y = startY;
         rect = {x, y, TILE_SIZE, TILE_SIZE};
+        active = true;
+        hp = 1;
         tankTexture = IMG_LoadTexture(renderer,texturePath.c_str());
         dirX = 0;
-        dirY = 1;
+        dirY = -10;
     }
 
     // Constructor mặc định
@@ -33,8 +36,10 @@
     void PlayerTank::move(int dx, int dy, const std::vector<Wall>& walls, const std::vector<Stone>& stones) {
         int newX = x + dx;
         int newY = y + dy;
-        this->dirX = dx;
-        this->dirY = dy;
+        //this->
+        dirX = dx;
+        //this->
+        dirY = dy;
         calculateAngle();
         SDL_Rect newRect = {newX, newY, TILE_SIZE, TILE_SIZE};
         for (const auto& wall : walls) {
@@ -48,7 +53,7 @@
             }
         }
 
-        if (newX >= TILE_SIZE && newX <= SCREEN_WIDTH - TILE_SIZE * 4 - TILE_SIZEm  &&
+        if (newX >= TILE_SIZE && newX <= SCREEN_WIDTH - TILE_SIZE * 4 - TILE_SIZEm*2  &&
             newY >= TILE_SIZE && newY <= SCREEN_HEIGHT - TILE_SIZE * 2) {
             x = newX;
             y = newY;
@@ -58,11 +63,15 @@
     }
 
     void PlayerTank::shoot(SDL_Renderer* renderer) {
+        Uint32 currentTime = SDL_GetTicks();
+        if (currentTime - lastShootTime >= shootCooldown) {
         bullets.push_back(Bullet(
             x + TILE_SIZE / 2 - 5,
             y + TILE_SIZE / 2 - 5,
             dirX, dirY,renderer
         ));
+        lastShootTime = currentTime;
+        }
     }
     void PlayerTank::updateBullets() {
         bullets.erase(
@@ -78,15 +87,13 @@
         }
     }
     void PlayerTank::render(SDL_Renderer* renderer) {
+        if (active){
         if (tankTexture) {
-            // Tính pivot là tâm của xe
-            //pivot.x = rect.w / 2;
-            //pivot.y = rect.h / 2;
-            // Render với góc xoay và pivot (xoay theo hướng di chuyển)
             SDL_RenderCopyEx(renderer, tankTexture, NULL, &rect, angle, nullptr, SDL_FLIP_NONE);
         }
         //SDL_RenderCopy(renderer, tankTexture, NULL, &rect);
         for (auto& bullet : bullets) {
             bullet.render(renderer);
+            }
         }
     }

@@ -13,7 +13,8 @@ public:
     int x, y;
     int dirX, dirY;
     double angle;
-    //SDL_Point pivot;
+    int hp;
+    bool active;
     SDL_Rect rect;
     std::vector<Bullet> bullets;
     SDL_Texture *tankTexture;

@@ -1,6 +1,7 @@
 #include "bullet.h"
 #include "constants.h"
 #include <SDL.h>
+#include <iostream>
 #include <SDL_image.h>
 SDL_Texture *bulletTexture;
 Bullet::Bullet(int startX, int startY, int dirX, int dirY, SDL_Renderer* renderer) {

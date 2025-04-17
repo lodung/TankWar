@@ -10,7 +10,7 @@ public:
     bool active;
     double angle;
     void calculateAngle();
-    Bullet() = default;
+    Bullet() = default ;
     Bullet(int startX, int startY, int dirX, int dirY,SDL_Renderer* renderer);
     void move();
     void render(SDL_Renderer* renderer);
