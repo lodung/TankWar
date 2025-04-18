@@ -1,5 +1,6 @@
 #include "EnemyTank.h"
 #include <algorithm>
+#include <iostream>
 #include <SDL_image.h>
 EnemyTank::EnemyTank(int startX, int startY,SDL_Renderer *renderer) {
     moveDelay = 15;
@@ -27,7 +28,7 @@ void EnemyTank::moveTowardPlayer(int playerX, int playerY, const vector<Wall>& w
     if (--moveDelay > 0) return;
 
     moveDelay = 1000;
-
+    std::cout << moveDelay;
     int dxPrimary = 0, dyPrimary = 0;
     int dxSecondary = 0, dySecondary = 0;
 

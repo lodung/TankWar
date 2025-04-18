@@ -56,6 +56,7 @@ Ice::Ice(int startX, int startY, SDL_Renderer *renderer)
 void Ice::render(SDL_Renderer* renderer){
     SDL_RenderCopy(renderer, iceTexture, NULL, &rect);
 }
+
 Water::Water(int startX, int startY, SDL_Renderer *renderer)
 {
     x  = startX;
@@ -65,4 +66,16 @@ Water::Water(int startX, int startY, SDL_Renderer *renderer)
 }
 void Water::render(SDL_Renderer* renderer){
     SDL_RenderCopy(renderer, waterTexture, NULL, &rect);
+}
+
+Base::Base(int startX, int startY,SDL_Renderer *renderer){
+    x = startX;
+    y = startY;
+    active = true;
+    Base() = default;
+    baseTexture = IMG_LoadTexture(renderer, "image/Base.png");
+    rect = {TILE_SIZE,TILE_SIZE,TILE_SIZE,TILE_SIZE};
+}
+void Base::render(SDL_Renderer* renderer){
+    SDL_RenderCopy(renderer, baseTexture, NULL, &rect);
 }

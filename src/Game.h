@@ -26,11 +26,12 @@ public:
     std::vector<Bush> bushs;
     std::vector<Ice> ices;
     std::vector<Water> waters;
+    Base base;
     PlayerTank player;
     PlayerTank player2;
     int enemyNumber;
     std::vector<EnemyTank> enemies;
-    int level;
+    int level; bool menu;
     int tocdo1,tocdo2;
     std::string dangcap;
     int score;

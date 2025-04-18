@@ -6,7 +6,7 @@
     #include <SDL_image.h>
     #include <algorithm>
     Uint32 lastShootTime = 0;
-    const Uint32 shootCooldown = 300;
+    const Uint32 shootCooldown = 3;
     void PlayerTank::calculateAngle() {
         if (dirX > 0 ) {      // Phải
             angle = 90.0;
@@ -26,7 +26,7 @@
         hp = 1;
         tankTexture = IMG_LoadTexture(renderer,texturePath.c_str());
         dirX = 0;
-        dirY = -10;
+        dirY = -1;
     }
 
     // Constructor mặc định

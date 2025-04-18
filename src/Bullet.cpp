@@ -27,6 +27,10 @@ void Bullet::calculateAngle() {
     };
 
 void Bullet::move() {
+    if (dx > 0) dx = 10;
+    if (dx < 0) dx = -10;
+    if (dy < 0) dy = -10;
+    if (dy > 0) dy = 10;
     x += dx;
     y += dy;
     rect.x = x;

@@ -45,4 +45,14 @@ public:
     Water (int startX,int startY, SDL_Renderer *renderer);
     void render(SDL_Renderer* renderer);
 };
+class Base{
+public:
+    int x,y;
+    SDL_Rect rect;
+    SDL_Texture *baseTexture;
+    bool active;
+    Base (int startX,int startY,SDL_Renderer *renderer);
+    Base();
+    void render(SDL_Renderer *renderer);
+};
 #endif

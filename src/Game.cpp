@@ -6,7 +6,7 @@
 #include <fstream>
 #include <SDL_mixer.h>
 #include <ctime>
-Game::Game() : enemyNumber(2) {
+Game::Game() : enemyNumber(1) {
     running = true;
 
     if (SDL_Init(SDL_INIT_AUDIO) < 0 || Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048) < 0) {
@@ -48,13 +48,14 @@ Game::Game() : enemyNumber(2) {
         running = false;
     }
     Mix_VolumeMusic(40);
-    level = 1;
+    level = 17;
     score = 0;
-    tocdo1 = 10; tocdo2=10;
+    tocdo1 = 2; tocdo2 = 2; menu = true;
     isPause = 0;
     dangcap = std::to_string(level);
     srand(time(0));
     generateWalls();
+    base = Base (9*TILE_SIZEm, 13*TILE_SIZEm, renderer);
     player = PlayerTank(5 * TILE_SIZE, 13 * TILE_SIZE,renderer, "image/Tank.png");
     player2 = PlayerTank(9 * TILE_SIZE,  13* TILE_SIZE,renderer, "image/Player2.png");
     spawnEnemies();
@@ -126,7 +127,7 @@ void Game::spawnEnemies() {
         enemies.push_back(EnemyTank(ex, ey,renderer));
     }
 }
-        void Game::handleEvents() {
+       /* void Game::handleEvents() {
             SDL_Event event;
             while (SDL_PollEvent(&event)) {
                 if (event.type == SDL_QUIT) {
@@ -155,28 +156,44 @@ void Game::spawnEnemies() {
                     }
                 }
             }
-};/*
+};*/
 void Game::handleEvents() {
     SDL_Event event;
     while (SDL_PollEvent(&event)) {
         if (event.type == SDL_QUIT) {
             running = false;
         }
+        // Xử lý sự kiện nhấn phím Z để tạm dừng (chỉ trigger khi nhấn, không giữ)
+        if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_z) {
+            isPause = !isPause;
+        }
+        else if(event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_ESCAPE){
+            running = false;
+        }
+        else if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_1) {
+            menu = 0;
+        }
+        else if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_2 ){
+            menu = 0;
+        }
     }
+
     const Uint8* keystates = SDL_GetKeyboardState(nullptr); // Lấy trạng thái của tất cả các phím
 
     // Di chuyển Player 1
+
+    if(!isPause){
     if (keystates[SDL_SCANCODE_UP]) {
-        player.move(0, -10, walls, stones);  // Di chuyển lên
+        player.move(0, -tocdo1, walls, stones);  // Di chuyển lên
     }
     if (keystates[SDL_SCANCODE_DOWN]) {
-        player.move(0, 10, walls, stones);   // Di chuyển xuống
+        player.move(0, tocdo1, walls, stones);   // Di chuyển xuống
     }
     if (keystates[SDL_SCANCODE_LEFT]) {
-        player.move(-10, 0, walls, stones);  // Di chuyển sang trái
+        player.move(-tocdo1, 0, walls, stones);  // Di chuyển sang trái
     }
     if (keystates[SDL_SCANCODE_RIGHT]) {
-        player.move(10, 0, walls, stones);   // Di chuyển sang phải
+        player.move(tocdo1, 0, walls, stones);   // Di chuyển sang phải
     }
     if (keystates[SDL_SCANCODE_SPACE]) {
         player.shoot(renderer);  // Bắn đạn
@@ -184,21 +201,22 @@ void Game::handleEvents() {
 
     // Di chuyển Player 2
     if (keystates[SDL_SCANCODE_W]) {
-        player2.move(0, -10, walls, stones); // Di chuyển lên
+        player2.move(0, -tocdo2, walls, stones); // Di chuyển lên
     }
     if (keystates[SDL_SCANCODE_S]) {
-        player2.move(0, 10, walls, stones);  // Di chuyển xuống
+        player2.move(0, tocdo2, walls, stones);  // Di chuyển xuống
     }
     if (keystates[SDL_SCANCODE_A]) {
-        player2.move(-10, 0, walls, stones); // Di chuyển sang trái
+        player2.move(-tocdo2, 0, walls, stones); // Di chuyển sang trái
     }
     if (keystates[SDL_SCANCODE_D]) {
-        player2.move(10, 0, walls, stones);  // Di chuyển sang phải
+        player2.move(tocdo2, 0, walls, stones);  // Di chuyển sang phải
     }
     if (keystates[SDL_SCANCODE_L]) {
         player2.shoot(renderer);  // Bắn đạn
     }
-}*/
+    }
+}
 
 
 
@@ -300,17 +318,18 @@ void Game::update() {
 }
 
     //Player di vào băng
+
     for(auto& ice: ices){
         if(SDL_HasIntersection(&player.rect, &ice.rect)){
-            tocdo1 = 20;
+            tocdo1 = 4;
             break;
-        }else tocdo1 = 10;
+        }else tocdo1 = 4;
     }
     for(auto& ice: ices){
         if(SDL_HasIntersection(&player2.rect, &ice.rect)){
-            tocdo2 = 20;
+            tocdo2 = 4;
             break;
-        }else tocdo2 = 10;
+        }else tocdo2 = 4;
     }
 
 
@@ -385,7 +404,7 @@ void Game::update() {
     if (enemies.empty()) {
         std::cout << "WIN" << std::endl;
         level++;
-        if (level > 9) {
+        if (level > 35) {
             std::cout<<"diem so: "<<score;
             SDL_Delay(1500);
             running = false;
@@ -406,7 +425,7 @@ void Game::update() {
 
 
 void Game::render() {
-    if (isPause) {
+    if (isPause == true && menu == false ) {
         //Hiển thị thông báo "PAUSED"
         SDL_Surface* textSurface = TTF_RenderText_Solid(font, "PAUSED", {255, 255, 0});
         SDL_Texture* textTexture = SDL_CreateTextureFromSurface(renderer, textSurface);
@@ -439,6 +458,7 @@ void Game::render() {
     }
     for (auto& enemy : enemies) enemy.render(renderer);
     for (auto& bush : bushs) bush.render(renderer);
+    if(base.active == true) base.render(renderer);
     SDL_RenderPresent(renderer);
 }
 
