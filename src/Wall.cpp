@@ -72,9 +72,8 @@ Base::Base(int startX, int startY,SDL_Renderer *renderer){
     x = startX;
     y = startY;
     active = true;
-    Base() = default;
-    baseTexture = IMG_LoadTexture(renderer, "image/Base.png");
-    rect = {TILE_SIZE,TILE_SIZE,TILE_SIZE,TILE_SIZE};
+    baseTexture = IMG_LoadTexture(renderer,"image/Base.png");
+    rect = {x,y,TILE_SIZE,TILE_SIZE};
 }
 void Base::render(SDL_Renderer* renderer){
     SDL_RenderCopy(renderer, baseTexture, NULL, &rect);

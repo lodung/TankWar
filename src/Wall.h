@@ -51,8 +51,8 @@ public:
     SDL_Rect rect;
     SDL_Texture *baseTexture;
     bool active;
-    Base (int startX,int startY,SDL_Renderer *renderer);
-    Base();
+    Base(){};
+    Base(int startX, int startY, SDL_Renderer* renderer);
     void render(SDL_Renderer *renderer);
 };
 #endif

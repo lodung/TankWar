@@ -8,7 +8,6 @@
 #include <ctime>
 Game::Game() : enemyNumber(1) {
     running = true;
-
     if (SDL_Init(SDL_INIT_AUDIO) < 0 || Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048) < 0) {
     std::cerr << "SDL_mixer could not initialize! Error: " << Mix_GetError() << std::endl;
     running = false;
@@ -55,7 +54,7 @@ Game::Game() : enemyNumber(1) {
     dangcap = std::to_string(level);
     srand(time(0));
     generateWalls();
-    base = Base (9*TILE_SIZEm, 13*TILE_SIZEm, renderer);
+    base = Base(7 * TILE_SIZE, 13 * TILE_SIZE, renderer);
     player = PlayerTank(5 * TILE_SIZE, 13 * TILE_SIZE,renderer, "image/Tank.png");
     player2 = PlayerTank(9 * TILE_SIZE,  13* TILE_SIZE,renderer, "image/Player2.png");
     spawnEnemies();
@@ -318,7 +317,6 @@ void Game::update() {
 }
 
     //Player di vào băng
-
     for(auto& ice: ices){
         if(SDL_HasIntersection(&player.rect, &ice.rect)){
             tocdo1 = 4;
@@ -390,6 +388,25 @@ void Game::update() {
         }
     }
 
+    //Va chạm với base
+    for (auto& enemy : enemies ){
+        for (auto& bullet: enemy.bullets){
+            if(SDL_HasIntersection(&bullet.rect, &base.rect)){
+                base.active = false;
+            }
+        }
+    }
+    for (auto& bullet : player.bullets ){
+            if(SDL_HasIntersection(&bullet.rect, &base.rect)){
+                base.active = false;
+            }
+    }
+    for (auto& bullet : player2.bullets ){
+            if(SDL_HasIntersection(&bullet.rect, &base.rect)){
+                base.active = false;
+            }
+    }
+
     //Xóa kẻ địch bị đánh dấu enemies.active = false
     enemies.erase(
         std::remove_if(
@@ -456,9 +473,11 @@ void Game::render() {
     if(player2.active == true){
         player2.render(renderer);
     }
+    if(base.active == true){
+        base.render(renderer);
+    }
     for (auto& enemy : enemies) enemy.render(renderer);
     for (auto& bush : bushs) bush.render(renderer);
-    if(base.active == true) base.render(renderer);
     SDL_RenderPresent(renderer);
 }
 
