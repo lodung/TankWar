@@ -18,7 +18,7 @@
             angle = 180.0;
         }
     };
-    PlayerTank::PlayerTank(int startX, int startY, SDL_Renderer* renderer, const std::string& texturePath) {
+    PlayerTank::PlayerTank(int startX, int startY, SDL_Renderer* renderer, const std::string& texturePath,Mix_Chunk* sound) {
         x = startX;
         y = startY;
         rect = {x, y, TILE_SIZE, TILE_SIZE};
@@ -27,6 +27,7 @@
         tankTexture = IMG_LoadTexture(renderer,texturePath.c_str());
         dirX = 0;
         dirY = -1;
+        shootSound = sound;
     }
 
     // Constructor mặc định
@@ -70,7 +71,10 @@
             y + TILE_SIZE / 2 - 5,
             dirX, dirY,renderer
         ));
-        lastShootTime = currentTime;
+        if (shootSound) {
+            Mix_PlayChannel(-1, shootSound, 0);
+        }
+            lastShootTime = currentTime;
         }
     }
     void PlayerTank::updateBullets() {

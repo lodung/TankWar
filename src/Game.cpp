@@ -45,6 +45,11 @@ Game::Game() : enemyNumber(1) {
         std::cerr << "Failed to load font! Error: " << TTF_GetError() << std::endl;
         running = false;
     }
+    shootSound = Mix_LoadWAV("sound/shoot.mp3");
+    if (!shootSound) {
+        std::cerr << "Failed to load shoot sound! Error: " << Mix_GetError() << std::endl;
+        running = false;
+    }
     Mix_VolumeMusic(40);
     level = 17;
     score = 0;
@@ -54,8 +59,8 @@ Game::Game() : enemyNumber(1) {
     srand(time(0));
     generateWalls();
     base = Base(7 * TILE_SIZE, 13 * TILE_SIZE, renderer);
-    player = PlayerTank(5 * TILE_SIZE, 13 * TILE_SIZE,renderer, "image/Tank.png");
-    player2 = PlayerTank(9 * TILE_SIZE,  13* TILE_SIZE,renderer, "image/Player2.png");
+    player = PlayerTank(5 * TILE_SIZE, 13 * TILE_SIZE,renderer, "image/Tank.png",shootSound);
+    player2 = PlayerTank(9 * TILE_SIZE,  13* TILE_SIZE,renderer, "image/Player2.png",shootSound);
     spawnEnemies();
 
 }
@@ -427,10 +432,10 @@ void Game::update() {
         }
         dangcap = std::to_string(level);
         int oldHp = player.hp;
-        player = PlayerTank(5 * TILE_SIZE, 13 * TILE_SIZE, renderer, "image/Tank.png");
+        player = PlayerTank(5 * TILE_SIZE, 13 * TILE_SIZE, renderer, "image/Tank.png",shootSound);
         if(oldHp > 0) player.hp = oldHp;
         int oldHp2 = player2.hp;
-        player2 = PlayerTank(9 * TILE_SIZE, 13 * TILE_SIZE, renderer, "image/Player2.png");
+        player2 = PlayerTank(9 * TILE_SIZE, 13 * TILE_SIZE, renderer, "image/Player2.png",shootSound);
         if(oldHp2 > 0) player2.hp = oldHp2;
 
         player.bullets.clear();
@@ -492,6 +497,7 @@ void Game::run() {
 
 
 Game::~Game() {
+    Mix_FreeChunk(shootSound);
     Mix_FreeMusic(backGroundMusic);
     TTF_CloseFont(font);
     TTF_Quit();

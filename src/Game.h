@@ -14,6 +14,7 @@
 class Game {
 public:
     bool isPause;
+    Mix_Chunk* shootSound;
     TTF_Font* font;
     SDL_Texture* startScreenTexture;
     Mix_Music* backGroundMusic;
