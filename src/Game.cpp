@@ -40,7 +40,7 @@ Game::Game() : enemyNumber(1) {
     } else {
         Mix_PlayMusic(backGroundMusic, -1);
     }
-    font = TTF_OpenFont("ARIAL.ttf", 150);
+    font = TTF_OpenFont("ARIAL.ttf", 30);
     if (!font) {
         std::cerr << "Failed to load font! Error: " << TTF_GetError() << std::endl;
         running = false;
@@ -50,10 +50,17 @@ Game::Game() : enemyNumber(1) {
         std::cerr << "Failed to load shoot sound! Error: " << Mix_GetError() << std::endl;
         running = false;
     }
+
+    SDL_Color textColor = {255, 255, 0}; // Màu vàng
+    SDL_Surface* textSurface = TTF_RenderText_Solid(font, "LEVEL", textColor);
+    levelTextTexture = SDL_CreateTextureFromSurface(renderer, textSurface);
+    levelTextRect = {SCREEN_WIDTH - 200, 40, textSurface->w, textSurface->h}; // Góc phải trên
+    SDL_FreeSurface(textSurface);
     Mix_VolumeMusic(40);
-    level = 17;
+    level = 16;
     score = 0;
-    tocdo1 = 2; tocdo2 = 2; menu = true;
+    tocdo1 = 4; tocdo2 = 4;
+    //menu = true;
     isPause = 0;
     dangcap = std::to_string(level);
     srand(time(0));
@@ -62,7 +69,7 @@ Game::Game() : enemyNumber(1) {
     player = PlayerTank(5 * TILE_SIZE, 13 * TILE_SIZE,renderer, "image/Tank.png",shootSound);
     player2 = PlayerTank(9 * TILE_SIZE,  13* TILE_SIZE,renderer, "image/Player2.png",shootSound);
     spawnEnemies();
-
+    updateLevelDisplay();
 }
 
 void Game::generateWalls() {
@@ -109,8 +116,6 @@ void Game::generateWalls() {
 
 }
 
-
-
 void Game::spawnEnemies() {
     enemies.clear();
     for (int i = 0; i < enemyNumber; ++i) {
@@ -130,36 +135,7 @@ void Game::spawnEnemies() {
         enemies.push_back(EnemyTank(ex, ey,renderer));
     }
 }
-       /* void Game::handleEvents() {
-            SDL_Event event;
-            while (SDL_PollEvent(&event)) {
-                if (event.type == SDL_QUIT) {
-                    running = false;
-                }
-                if (event.key.keysym.sym == SDLK_z)
-                    {
-                        isPause = !isPause;
-                    }
-                if (!isPause){
 
-                if (event.type == SDL_KEYDOWN) {
-                    switch (event.key.keysym.sym) {
-                        case SDLK_UP: player.move(0, -tocdo1, walls, stones); break;
-                        case SDLK_DOWN: player.move(0, tocdo1, walls, stones); break;
-                        case SDLK_LEFT: player.move(-tocdo1, 0, walls, stones); break;
-                        case SDLK_RIGHT: player.move(tocdo1, 0, walls, stones); break;
-                        case SDLK_SPACE: player.shoot(renderer); break;
-                        case SDLK_ESCAPE: running = false; break;
-                        case SDLK_w: player2.move(0, -tocdo2, walls, stones); break;
-                        case SDLK_s: player2.move(0, tocdo2, walls, stones); break;
-                        case SDLK_a: player2.move(-tocdo2, 0, walls, stones); break;
-                        case SDLK_d: player2.move(tocdo2, 0, walls, stones); break;
-                        case SDLK_l: player2.shoot(renderer); break;
-                        }
-                    }
-                }
-            }
-};*/
 void Game::handleEvents() {
     SDL_Event event;
     while (SDL_PollEvent(&event)) {
@@ -204,24 +180,42 @@ void Game::handleEvents() {
 
     // Di chuyển Player 2
     if (keystates[SDL_SCANCODE_W]) {
-        player2.move(0, -tocdo2, walls, stones); // Di chuyển lên
+        player2.move(0, -tocdo2, walls, stones);
     }
     if (keystates[SDL_SCANCODE_S]) {
-        player2.move(0, tocdo2, walls, stones);  // Di chuyển xuống
+        player2.move(0, tocdo2, walls, stones);
     }
     if (keystates[SDL_SCANCODE_A]) {
-        player2.move(-tocdo2, 0, walls, stones); // Di chuyển sang trái
+        player2.move(-tocdo2, 0, walls, stones);
     }
     if (keystates[SDL_SCANCODE_D]) {
-        player2.move(tocdo2, 0, walls, stones);  // Di chuyển sang phải
+        player2.move(tocdo2, 0, walls, stones);
     }
     if (keystates[SDL_SCANCODE_L]) {
-        player2.shoot(renderer);  // Bắn đạn
+        player2.shoot(renderer);
     }
     }
 }
 
+void Game::updateLevelDisplay() {
+    cout<<std::to_string(level);
+    // Hủy texture cũ nếu tồn tại
+    if (levelNumberTexture) {
+        SDL_DestroyTexture(levelNumberTexture);
+    }
 
+    SDL_Color numberColor = {0, 0, 255}; // Màu Xanh
+    std::string levelStr = std::to_string(level);
+    SDL_Surface* numberSurface = TTF_RenderText_Solid(font, levelStr.c_str(), numberColor);
+    levelNumberTexture = SDL_CreateTextureFromSurface(renderer, numberSurface);
+    levelNumberRect = {
+        levelTextRect.x + levelTextRect.w + 10, // Bên phải chữ "LEVEL"
+        levelTextRect.y,
+        numberSurface->w,
+        numberSurface->h
+    };
+    SDL_FreeSurface(numberSurface);
+}
 
 
 void Game::update() {
@@ -437,6 +431,7 @@ void Game::update() {
         int oldHp2 = player2.hp;
         player2 = PlayerTank(9 * TILE_SIZE, 13 * TILE_SIZE, renderer, "image/Player2.png",shootSound);
         if(oldHp2 > 0) player2.hp = oldHp2;
+        updateLevelDisplay();
 
         player.bullets.clear();
         generateWalls();
@@ -455,17 +450,18 @@ void Game::render() {
         SDL_RenderPresent(renderer);
         return;
     }
+
     SDL_SetRenderDrawColor(renderer, 128, 128, 128, 255);
     SDL_RenderClear(renderer);
 
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
     for (int i = 1; i < MAP_HEIGHT-1; ++i) {
-    for (int j = 1; j < MAP_WIDTH-4; ++j) {
+    for (int j = 1; j < MAP_WIDTH-6; ++j) {
         SDL_Rect tile = { j * TILE_SIZE, i * TILE_SIZE, TILE_SIZE, TILE_SIZE };
         SDL_RenderFillRect(renderer, &tile);
+        }
     }
-    }
-    //for (auto& bush : bushs) bush.render(renderer);
+
     for (auto& water: waters) water.render(renderer);
     for (auto& ice : ices) ice.render(renderer);
     for (auto& wall : walls) wall.render(renderer);
@@ -482,6 +478,9 @@ void Game::render() {
     }
     for (auto& enemy : enemies) enemy.render(renderer);
     for (auto& bush : bushs) bush.render(renderer);
+
+    SDL_RenderCopy(renderer, levelTextTexture, NULL, &levelTextRect);
+    SDL_RenderCopy(renderer, levelNumberTexture, NULL, &levelNumberRect);
     SDL_RenderPresent(renderer);
 }
 
@@ -501,6 +500,8 @@ Game::~Game() {
     Mix_FreeMusic(backGroundMusic);
     TTF_CloseFont(font);
     TTF_Quit();
+    SDL_DestroyTexture(levelTextTexture);
+    SDL_DestroyTexture(levelNumberTexture);
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
     SDL_Quit();

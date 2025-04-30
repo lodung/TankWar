@@ -14,6 +14,11 @@
 class Game {
 public:
     bool isPause;
+
+    SDL_Texture* levelTextTexture;
+    SDL_Texture* levelNumberTexture;
+    SDL_Rect levelTextRect;
+    SDL_Rect levelNumberRect;
     Mix_Chunk* shootSound;
     TTF_Font* font;
     SDL_Texture* startScreenTexture;
@@ -32,12 +37,14 @@ public:
     PlayerTank player2;
     int enemyNumber;
     std::vector<EnemyTank> enemies;
-    int level; bool menu;
+    int level;
+    bool menu;
     int tocdo1,tocdo2;
     std::string dangcap;
     int score;
     Game();
     ~Game();
+    void updateLevelDisplay();
     void loadMusic();
     void generateWalls();
     void spawnEnemies();
