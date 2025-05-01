@@ -51,11 +51,8 @@ Game::Game() : enemyNumber(1) {
         running = false;
     }
 
-    SDL_Color textColor = {255, 255, 0}; // Màu vàng
-    SDL_Surface* textSurface = TTF_RenderText_Solid(font, "LEVEL", textColor);
-    levelTextTexture = SDL_CreateTextureFromSurface(renderer, textSurface);
-    levelTextRect = {SCREEN_WIDTH - 200, 40, textSurface->w, textSurface->h}; // Góc phải trên
-    SDL_FreeSurface(textSurface);
+
+
     Mix_VolumeMusic(40);
     level = 16;
     score = 0;
@@ -70,6 +67,7 @@ Game::Game() : enemyNumber(1) {
     player2 = PlayerTank(9 * TILE_SIZE,  13* TILE_SIZE,renderer, "image/Player2.png",shootSound);
     spawnEnemies();
     updateLevelDisplay();
+//    updateScoreDisplay();
 }
 
 void Game::generateWalls() {
@@ -198,25 +196,36 @@ void Game::handleEvents() {
 }
 
 void Game::updateLevelDisplay() {
-    cout<<std::to_string(level);
+    std::string strDiemSo = "LEVEL: " + std::to_string(level);
+    SDL_Color textColor = {255, 255, 0}; // Màu vàng
+    SDL_Surface* textSurface = TTF_RenderText_Solid(font, strDiemSo.c_str(), textColor);
+    levelTextTexture = SDL_CreateTextureFromSurface(renderer, textSurface);
+    levelTextRect = {SCREEN_WIDTH - 200, 40, textSurface->w, textSurface->h}; // Góc phải trên
+    SDL_FreeSurface(textSurface);
+}
+/*
+void Game::updateScoreDisplay() {
     // Hủy texture cũ nếu tồn tại
-    if (levelNumberTexture) {
-        SDL_DestroyTexture(levelNumberTexture);
+    if (scoreTexture) {
+        SDL_DestroyTexture(scoreTexture);
     }
 
-    SDL_Color numberColor = {0, 0, 255}; // Màu Xanh
-    std::string levelStr = std::to_string(level);
-    SDL_Surface* numberSurface = TTF_RenderText_Solid(font, levelStr.c_str(), numberColor);
-    levelNumberTexture = SDL_CreateTextureFromSurface(renderer, numberSurface);
-    levelNumberRect = {
-        levelTextRect.x + levelTextRect.w + 10, // Bên phải chữ "LEVEL"
-        levelTextRect.y,
-        numberSurface->w,
-        numberSurface->h
-    };
-    SDL_FreeSurface(numberSurface);
-}
+    // Tạo chuỗi "SCORE: X" với X là giá trị điểm số
+    SDL_Color scoreColor = {255, 0, 0}; // Màu đỏ
+    std::string scoreStr = "SCORE: " + std::to_string(score);
+    SDL_Surface* scoreSurface = TTF_RenderText_Solid(font, scoreStr.c_str(), scoreColor);
+    scoreTexture = SDL_CreateTextureFromSurface(renderer, scoreSurface);
 
+    // Đặt vị trí hiển thị ngay dưới level
+    scoreRect = {
+        SCREEN_WIDTH - 200,
+        levelTextRect.y + levelTextRect.h + 10, // Dưới level
+        scoreSurface->w,
+        scoreSurface->h
+    };
+
+    SDL_FreeSurface(scoreSurface);
+}*/
 
 void Game::update() {
     if (isPause) return;
@@ -480,7 +489,8 @@ void Game::render() {
     for (auto& bush : bushs) bush.render(renderer);
 
     SDL_RenderCopy(renderer, levelTextTexture, NULL, &levelTextRect);
-    SDL_RenderCopy(renderer, levelNumberTexture, NULL, &levelNumberRect);
+ //   SDL_RenderCopy(renderer, levelNumberTexture, NULL, &levelNumberRect);
+//    SDL_RenderCopy(renderer, scoreTexture, NULL, &scoreRect);
     SDL_RenderPresent(renderer);
 }
 
@@ -501,7 +511,8 @@ Game::~Game() {
     TTF_CloseFont(font);
     TTF_Quit();
     SDL_DestroyTexture(levelTextTexture);
-    SDL_DestroyTexture(levelNumberTexture);
+//    SDL_DestroyTexture(levelNumberTexture);
+//    SDL_DestroyTexture(scoreTexture);
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
     SDL_Quit();

@@ -16,9 +16,11 @@ public:
     bool isPause;
 
     SDL_Texture* levelTextTexture;
-    SDL_Texture* levelNumberTexture;
+    //SDL_Texture* levelNumberTexture;
+   // SDL_Texture* scoreTexture;
+   // SDL_Rect scoreRect;
     SDL_Rect levelTextRect;
-    SDL_Rect levelNumberRect;
+    //SDL_Rect levelNumberRect;
     Mix_Chunk* shootSound;
     TTF_Font* font;
     SDL_Texture* startScreenTexture;
@@ -45,6 +47,7 @@ public:
     Game();
     ~Game();
     void updateLevelDisplay();
+    void updateScoreDisplay();
     void loadMusic();
     void generateWalls();
     void spawnEnemies();

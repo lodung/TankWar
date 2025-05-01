@@ -7,7 +7,6 @@
 #include "src/Game.h"
 
 int main(int argc, char* argv[]) {
-    //SDL_Texture* backgroundTexture = IMG_LoadTexture(renderer, "image/background.png");
 
     Game game;
     if (game.running) {

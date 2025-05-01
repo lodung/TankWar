@@ -12,6 +12,7 @@ EnemyTank::EnemyTank(int startX, int startY,SDL_Renderer *renderer) {
     dirX = 0;
     dirY = 1;
     active = true;
+//    lastShootTime = 0;
 }
 void EnemyTank::calculateAngle() {
         if (dirX > 0 ) {      // Phải
@@ -83,13 +84,15 @@ void EnemyTank::applyMove(int dx, int dy) {
 
 
 void EnemyTank::shoot(SDL_Renderer* renderer) {
-    if (--shootDelay > 0) return;
-    shootDelay = 5;
-    bullets.push_back(Bullet(
-        x + TILE_SIZE / 2 - 5,
-        y + TILE_SIZE / 2 - 5,
-        dirX, dirY, renderer
-    ));
+    Uint32 currentTime = SDL_GetTicks();
+    if (currentTime - lastShootTime >= shootCooldown){
+        bullets.push_back(Bullet(
+            x + TILE_SIZE / 2 - 5,
+            y + TILE_SIZE / 2 - 5,
+            dirX, dirY, renderer
+        ));
+        lastShootTime = currentTime;
+    }
 }
 
 void EnemyTank::updateBullets() {
@@ -105,8 +108,6 @@ void EnemyTank::updateBullets() {
 }
 
 void EnemyTank::render(SDL_Renderer* renderer) {
-    //SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
-    //SDL_RenderFillRect(renderer, &rect);
     SDL_RenderCopyEx (renderer, enemyTexture, NULL, &rect, angle, nullptr, SDL_FLIP_NONE);
         for (auto &bullet : bullets) bullet.render(renderer);
 }

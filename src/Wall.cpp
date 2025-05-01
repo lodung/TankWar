@@ -3,9 +3,6 @@
 #include <SDL.h>
 #include <SDL_image.h>
 
-
-
-
 Wall::Wall(int startX, int startY,SDL_Renderer *renderer) {
     x = startX;
     y = startY;
