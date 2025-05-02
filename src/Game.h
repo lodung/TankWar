@@ -18,6 +18,10 @@ public:
 
     SDL_Texture* levelTextTexture;
     SDL_Texture* scoreTexture;
+    SDL_Texture* hpTexture;
+    SDL_Rect hpRect;
+    SDL_Texture* hp2Texture;
+    SDL_Rect hp2Rect;
     SDL_Rect scoreRect;
     SDL_Rect levelTextRect;
     Mix_Chunk* shootSound;
@@ -37,7 +41,7 @@ public:
     Base base;
     PlayerTank player;
     PlayerTank player2;
-   // int enemyNumber;
+   //a int enemyNumber;
     std::vector<EnemyTank> enemies;
     int level;
     bool menu;
@@ -53,7 +57,7 @@ public:
 
     void updateLevelDisplay();
     void updateScoreDisplay();
-    //void updateHpDisplay();
+    void updateHpDisplay();
 
     void showMenu();
     void updateMenuDisplay();

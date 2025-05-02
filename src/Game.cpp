@@ -83,7 +83,7 @@ Game::Game() {
     updateSubMenuDisplay();
     updateLevelDisplay();
     updateScoreDisplay();
-//    updateHpDisplay();
+    updateHpDisplay();
 }
 
 void Game::generateWalls() {
@@ -216,7 +216,6 @@ void Game::updateLevelDisplay() {
     levelTextRect = {SCREEN_WIDTH - 200, 40, textSurface->w, textSurface->h}; // Góc phải trên
     SDL_FreeSurface(textSurface);
 }
-
 void Game::updateScoreDisplay() {
     std::string strDiemSo = "SCORE " + std::to_string(score);
     SDL_Color textColor = {173, 216, 230};
@@ -224,6 +223,22 @@ void Game::updateScoreDisplay() {
     scoreTexture = SDL_CreateTextureFromSurface(renderer,scoreSurface);
     scoreRect = {SCREEN_WIDTH - 200, 70, scoreSurface->w, scoreSurface->h};
     SDL_FreeSurface(scoreSurface);
+}
+void Game::updateHpDisplay(){
+    std::string strHp1 = "HP I: " + std::to_string(player.hp);
+    SDL_Color textColor = {0, 0 ,0};
+    SDL_Surface* hpSurface = TTF_RenderText_Solid(font, strHp1.c_str(),textColor);
+    hpTexture = SDL_CreateTextureFromSurface(renderer,hpSurface);
+    hpRect = {SCREEN_WIDTH - 200, 120, hpSurface->w, hpSurface->h};
+    SDL_FreeSurface(hpSurface);
+    if (gameMode == 2){
+    std::string strHp2 = "HP II: " + std::to_string(player2.hp);
+   // SDL_Color textColor = {0, 0 ,0};
+    SDL_Surface* hp2Surface = TTF_RenderText_Solid(font, strHp2.c_str(),textColor);
+    hp2Texture = SDL_CreateTextureFromSurface(renderer,hp2Surface);
+    hp2Rect = {SCREEN_WIDTH - 200, 150, hp2Surface->w, hp2Surface->h};
+    SDL_FreeSurface(hpSurface);
+    }
 }
 void Game::updateMenuDisplay() {
     std::cout<< "\n khoi tao menu ";
@@ -692,6 +707,8 @@ void Game::render() {
 
     SDL_RenderCopy(renderer, levelTextTexture, NULL, &levelTextRect);
     SDL_RenderCopy(renderer, scoreTexture, NULL, &scoreRect);
+    SDL_RenderCopy(renderer, hpTexture,NULL, &hpRect);
+    if (gameMode == 2 && hp2Texture) SDL_RenderCopy(renderer, hp2Texture, NULL, &hp2Rect);
     SDL_RenderPresent(renderer);
 }
 
@@ -708,6 +725,7 @@ void Game::run() {
         handleEvents();
         update();
         updateScoreDisplay();
+        updateHpDisplay();
         render();
         SDL_Delay(16);
         }
@@ -724,10 +742,12 @@ Game::~Game() {
     for (int i = 0; i < 3; i++) {
         SDL_DestroyTexture(optionsTexture[i]);
         SDL_DestroyTexture(subMenuOptionsTexture[i]);
-        }
+    }
     TTF_Quit();
     SDL_DestroyTexture(levelTextTexture);
     SDL_DestroyTexture(scoreTexture);
+    SDL_DestroyTexture(hpTexture);
+    SDL_DestroyTexture(hp2Texture);
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
     SDL_Quit();
