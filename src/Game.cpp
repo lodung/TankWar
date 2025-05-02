@@ -5,22 +5,23 @@
 #include <fstream>
 #include <SDL_mixer.h>
 #include <ctime>
-Game::Game() : enemyNumber(10) {
+Game::Game() : enemyNumber(2) {
     running = true;
-    if (SDL_Init(SDL_INIT_AUDIO) < 0 || Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048) < 0) {
-    std::cerr << "SDL_mixer could not initialize! Error: " << Mix_GetError() << std::endl;
-    running = false;
-    return;
-    }
     if (TTF_Init() == -1) {
         std::cerr << "SDL_ttf could not initialize! Error: " << TTF_GetError() << std::endl;
         running = false;
     }
-    if (SDL_Init(SDL_INIT_VIDEO) < 0) {
+    if (SDL_Init(SDL_INIT_AUDIO | SDL_INIT_VIDEO) < 0) {
         std::cerr << "SDL could not initialize! SDL_Error: " << SDL_GetError() << std::endl;
         running = false;
+        return;
     }
 
+    if (Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048) < 0) {
+        std::cerr << "SDL_mixer could not initialize! Error: " << Mix_GetError() << std::endl;
+        running = false;
+        return;
+    }
     window = SDL_CreateWindow("Tank War", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
                               SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN);
     if (!window) {
@@ -45,19 +46,23 @@ Game::Game() : enemyNumber(10) {
         std::cerr << "Failed to load font! Error: " << TTF_GetError() << std::endl;
         running = false;
     }
+    font2 = TTF_OpenFont("font.ttf", 40);
+    if (!font2) {
+        std::cerr << "Failed to load font! Error: " << TTF_GetError() << std::endl;
+        running = false;
+    }
     shootSound = Mix_LoadWAV("sound/shoot.mp3");
     if (!shootSound) {
         std::cerr << "Failed to load shoot sound! Error: " << Mix_GetError() << std::endl;
         running = false;
     }
-
-
-
     Mix_VolumeMusic(40);
+    selectedOption = 0;
+    selectedSubMenuOption = 0;
     level = 16;
     score = 0;
     tocdo1 = 4; tocdo2 = 4;
-    //menu = true;
+    menu = true;
     isPause = 0;
     dangcap = std::to_string(level);
     srand(time(0));
@@ -66,6 +71,8 @@ Game::Game() : enemyNumber(10) {
     player = PlayerTank(5 * TILE_SIZE, 13 * TILE_SIZE,renderer, "image/Tank.png",shootSound);
     player2 = PlayerTank(9 * TILE_SIZE,  13* TILE_SIZE,renderer, "image/Player2.png",shootSound);
     spawnEnemies();
+    updateMenuDisplay();
+    updateSubMenuDisplay();
     updateLevelDisplay();
     updateScoreDisplay();
 }
@@ -115,6 +122,7 @@ void Game::generateWalls() {
 }
 
 void Game::spawnEnemies() {
+    std::cout<<"emi spwan thanh cong";
     enemies.clear();
     for (int i = 0; i < enemyNumber; ++i) {
         int ex, ey;
@@ -160,6 +168,7 @@ void Game::handleEvents() {
     // Di chuyển Player 1
 
     if(!isPause){
+    if (player.active){
     if (keystates[SDL_SCANCODE_UP]) {
         player.move(0, -tocdo1, walls, stones);  // Di chuyển lên
     }
@@ -175,6 +184,8 @@ void Game::handleEvents() {
     if (keystates[SDL_SCANCODE_SPACE]) {
         player.shoot(renderer);  // Bắn đạn
     }
+    }
+    if(player2.active){
 
     // Di chuyển Player 2
     if (keystates[SDL_SCANCODE_W]) {
@@ -191,6 +202,7 @@ void Game::handleEvents() {
     }
     if (keystates[SDL_SCANCODE_L]) {
         player2.shoot(renderer);
+    }
     }
     }
 }
@@ -212,18 +224,222 @@ void Game::updateScoreDisplay() {
     scoreRect = {SCREEN_WIDTH - 200, 70, scoreSurface->w, scoreSurface->h};
     SDL_FreeSurface(scoreSurface);
 }
+void Game::updateMenuDisplay() {
+    std::cout<< "\n khoi tao menu ";
+    // Tạo texture cho tiêu đề
+    SDL_Color titleColor = {255, 0, 0}; // Màu đỏ cho tiêu đề
+    SDL_Surface* titleSurface = TTF_RenderText_Solid(font2, "TANK WAR", titleColor);
+    titleTexture = SDL_CreateTextureFromSurface(renderer, titleSurface);
+    titleRect = {SCREEN_WIDTH / 2 - titleSurface->w / 2, 100, titleSurface->w, titleSurface->h};
+    SDL_FreeSurface(titleSurface);
+
+    // Tạo texture cho các tùy chọn menu
+    for (int i = 0; i < 3; i++) {
+        SDL_Color optionColor;
+        if (i == selectedOption) {
+            optionColor = {255, 255, 0}; // Màu vàng cho tùy chọn được chọn
+        } else {
+            optionColor = {255, 255, 255}; // Màu trắng cho các tùy chọn khác
+        }
+
+        SDL_Surface* optionSurface = TTF_RenderText_Solid(font, menuOptions[i], optionColor);
+        optionsTexture[i] = SDL_CreateTextureFromSurface(renderer, optionSurface);
+        optionsRect[i] = {SCREEN_WIDTH / 2 - optionSurface->w / 2, 250 + i * 70, optionSurface->w, optionSurface->h};
+        SDL_FreeSurface(optionSurface);
+        std::cout<<"\nupdate menu thanh cong";
+    }
+}
+
+void Game::updateSubMenuDisplay() {
+    // Tạo texture cho các tùy chọn menu con
+    for (int i = 0; i < 3; i++) {
+        SDL_Color optionColor;
+        if (i == selectedSubMenuOption) {
+            optionColor = {255, 255, 0}; // Màu vàng cho tùy chọn được chọn
+        } else {
+            optionColor = {255, 255, 255}; // Màu trắng cho các tùy chọn khác
+        }
+
+        SDL_Surface* optionSurface = TTF_RenderText_Solid(font, subMenuOptions[i], optionColor);
+        if (optionSurface) {
+             // Giải phóng texture cũ nếu có trước khi tạo mới
+             if (subMenuOptionsTexture[i]) {
+                 SDL_DestroyTexture(subMenuOptionsTexture[i]);
+             }
+             subMenuOptionsTexture[i] = SDL_CreateTextureFromSurface(renderer, optionSurface);
+             subMenuOptionsRect[i] = {SCREEN_WIDTH / 2 - optionSurface->w / 2, 250 + i * 70, optionSurface->w, optionSurface->h}; // Vị trí tương tự menu chính
+             SDL_FreeSurface(optionSurface);
+        } else {
+            std::cerr << "Failed to create surface for submenu option: " << TTF_GetError() << std::endl;
+             // Xử lý lỗi nếu cần, ví dụ đặt texture thành nullptr
+             subMenuOptionsTexture[i] = nullptr;
+        }
+    }
+     std::cout<<"\nupdate sub menu thanh cong"; // Thông báo debug
+}
+
+void Game::showMenu() {
+    // Xử lý sự kiện menu
+    SDL_Event event;
+    while (SDL_PollEvent(&event)) {
+        if (event.type == SDL_QUIT) {
+            running = false;
+            menu = false;
+        }
+        else if (event.type == SDL_KEYDOWN) {
+            switch (event.key.keysym.sym) {
+                case SDLK_UP:
+                    selectedOption = (selectedOption - 1 + 3) % 3;
+                    updateMenuDisplay();
+                    break;
+                case SDLK_DOWN:
+                    selectedOption = (selectedOption + 1) % 3;
+                    updateMenuDisplay();
+                    break;
+                case SDLK_RETURN:
+                    if (selectedOption == 0) {
+                        // Start Game
+                        menu = false;
+                        subMenu = true;
+                        selectedSubMenuOption = 3;
+                        updateSubMenuDisplay();
+                    }
+                    else if (selectedOption == 1) {
+                        // Ranking - Hiển thị bảng xếp hạng (có thể thêm sau)
+                        // Tạm thời chỉ hiển thị thông báo
+                        SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_INFORMATION,
+                                               "Ranking",
+                                               "Ranking se som duoc cap nhat",
+                                               window);
+                    }
+                    else if (selectedOption == 2) {
+                        // Exit
+                        running = false;
+                        menu = false;
+                    }
+                    break;
+
+            }
+        }
+    }// Render menu
+    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255); // Màu đen cho nền
+    SDL_RenderClear(renderer);
+
+    // Vẽ tiêu đề
+    SDL_RenderCopy(renderer, titleTexture, NULL, &titleRect);
+
+    // Vẽ các tùy chọn menu
+    for (int i = 0; i < 3; i++) {
+        SDL_RenderCopy(renderer, optionsTexture[i], NULL, &optionsRect[i]);
+    }
+
+    // Tạo hiệu ứng chọn tùy chọn bằng cách vẽ mũi tên hoặc hình chữ nhật xung quanh
+    SDL_SetRenderDrawColor(renderer, 255, 255, 0, 255); // Màu vàng cho viền
+    SDL_Rect selectedRect = {
+        optionsRect[selectedOption].x - 20,
+        optionsRect[selectedOption].y - 5,
+        optionsRect[selectedOption].w + 40,
+        optionsRect[selectedOption].h + 10
+    };
+    SDL_RenderDrawRect(renderer, &selectedRect);
+
+    SDL_RenderPresent(renderer);
+    std::cout<<" \nkhoi tao menu thanh cong";
+}
+void Game::showSubMenu() {
+    // Xử lý sự kiện menu con
+    SDL_Event event;
+    while (SDL_PollEvent(&event)) {
+        if (event.type == SDL_QUIT) {
+            running = false;
+            subMenu = false; // Thoát khỏi trạng thái subMenu
+        }
+        else if (event.type == SDL_KEYDOWN) {
+            switch (event.key.keysym.sym) {
+                case SDLK_UP:
+                    selectedSubMenuOption = (selectedSubMenuOption - 1 + 3) % 3;
+                    updateSubMenuDisplay();
+                    break;
+                case SDLK_DOWN:
+                    selectedSubMenuOption = (selectedSubMenuOption + 1) % 3;
+                    updateSubMenuDisplay();
+                    break;
+                case SDLK_RETURN: // Phím Enter
+                    if (selectedSubMenuOption == 0) { // 1 Player
+                        gameMode = 1;
+                        subMenu = false; // Thoát subMenu, bắt đầu game
+                        // Đảm bảo player2 không hoạt động nếu cần
+                        player2.active = false;
+                        player2.rect = {0,0,0,0}; // Ẩn player 2 đi
+                        std::cout << "Starting 1 Player Game" << std::endl;
+                    }
+                    else if (selectedSubMenuOption == 1) {
+                        gameMode = 2;
+                        subMenu = false;
+                        // (Việc reset vị trí có thể cần làm lại khi bắt đầu level mới hoặc game mới)
+                         /*player2 = PlayerTank(9 * TILE_SIZE, 13* TILE_SIZE,renderer, "image/Player2.png",shootSound);
+                         player2.active = true;*/
+                        std::cout << "Starting 2 Players Game" << std::endl;
+                    }
+                    else if (selectedSubMenuOption == 2) { // Back
+                        subMenu = false; // Thoát subMenu
+                        menu = true;     // Quay lại menu chính
+                        updateMenuDisplay(); // Cập nhật lại menu chính (để highlight đúng)
+                        std::cout << "Returning to Main Menu" << std::endl;
+                    }
+                    break;
+                 case SDLK_ESCAPE: // Phím Escape cũng có thể dùng để Back
+                    subMenu = false;
+                    menu = true;
+                    updateMenuDisplay();
+                     std::cout << "Returning to Main Menu (ESC)" << std::endl;
+                    break;
+            }
+        }
+    }
+
+    // Render menu con
+    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255); // Màu đen cho nền
+    SDL_RenderClear(renderer);
+
+    // Vẽ tiêu đề (có thể dùng lại titleTexture của menu chính hoặc tạo cái mới)
+    SDL_RenderCopy(renderer, titleTexture, NULL, &titleRect);
+
+    // Vẽ các tùy chọn menu con
+    for (int i = 0; i < 3; i++) {
+         if (subMenuOptionsTexture[i]) { // Chỉ render nếu texture hợp lệ
+            SDL_RenderCopy(renderer, subMenuOptionsTexture[i], NULL, &subMenuOptionsRect[i]);
+         }
+    }
+
+    // Vẽ hình chữ nhật hoặc mũi tên để chỉ lựa chọn hiện tại
+    SDL_SetRenderDrawColor(renderer, 255, 255, 0, 255); // Màu vàng cho viền
+     if (subMenuOptionsTexture[selectedSubMenuOption]) { // Chỉ vẽ nếu texture tương ứng hợp lệ
+        SDL_Rect selectedRectHighlight = {
+            subMenuOptionsRect[selectedSubMenuOption].x - 20,
+            subMenuOptionsRect[selectedSubMenuOption].y - 5,
+            subMenuOptionsRect[selectedSubMenuOption].w + 40,
+            subMenuOptionsRect[selectedSubMenuOption].h + 10
+        };
+        SDL_RenderDrawRect(renderer, &selectedRectHighlight);
+     }
+
+    SDL_RenderPresent(renderer);
+     //std::cout<<" \nrender sub menu thanh cong"; // Bỏ comment nếu cần debug
+}
+
 
 void Game::update() {
-    if (isPause) return;
+    if (isPause || menu || subMenu) return;
     //Update đạn
-    player.updateBullets();
-    player2.updateBullets();
+    if (player.active) player.updateBullets();
+    if (gameMode == 2 && player2.active) player2.updateBullets();
 
     //Cử chỉ của enemy
     for (auto& enemy : enemies) {
         enemy.moveTowardPlayer(player.x,player.y,walls,stones);
         enemy.updateBullets();
-        if (rand() % 100 < 2) enemy.shoot(renderer);
+        enemy.shoot(renderer);
     }
 
     //Va chạm tường
@@ -375,8 +591,9 @@ void Game::update() {
             }
         }
 
-        if (player2.hp == 0 && player.hp == 0){
-
+        if (gameMode == 1 && player.active == false){
+            running = false;
+        }else if (gameMode == 2 && player.active == false && player2.active == false){
             running = false;
         }
     }
@@ -424,13 +641,16 @@ void Game::update() {
         player = PlayerTank(5 * TILE_SIZE, 13 * TILE_SIZE, renderer, "image/Tank.png",shootSound);
         if(oldHp > 0) player.hp = oldHp;
         int oldHp2 = player2.hp;
+        if (gameMode == 2){
         player2 = PlayerTank(9 * TILE_SIZE, 13 * TILE_SIZE, renderer, "image/Player2.png",shootSound);
         if(oldHp2 > 0) player2.hp = oldHp2;
+        }
         updateLevelDisplay();
         updateScoreDisplay();
         player.bullets.clear();
         generateWalls();
         spawnEnemies();
+        updateScoreDisplay();
     }
 };
 
@@ -448,7 +668,7 @@ void Game::render() {
 
     SDL_SetRenderDrawColor(renderer, 128, 128, 128, 255);
     SDL_RenderClear(renderer);
-
+    std::cout<<gameMode<<endl;
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
     for (int i = 1; i < MAP_HEIGHT-1; ++i) {
     for (int j = 1; j < MAP_WIDTH-6; ++j) {
@@ -482,10 +702,19 @@ void Game::render() {
 
 void Game::run() {
     while (running) {
+        if (menu) {
+            showMenu();
+        }
+        else if (subMenu){
+            showSubMenu();
+        }
+        else {
         handleEvents();
         update();
+        updateScoreDisplay();
         render();
         SDL_Delay(16);
+        }
     }
 }
 
@@ -494,9 +723,14 @@ Game::~Game() {
     Mix_FreeChunk(shootSound);
     Mix_FreeMusic(backGroundMusic);
     TTF_CloseFont(font);
+    TTF_CloseFont(font2);
+    SDL_DestroyTexture(titleTexture);
+    for (int i = 0; i < 3; i++) {
+        SDL_DestroyTexture(optionsTexture[i]);
+        SDL_DestroyTexture(subMenuOptionsTexture[i]);
+        }
     TTF_Quit();
     SDL_DestroyTexture(levelTextTexture);
-//    SDL_DestroyTexture(levelNumberTexture);
     SDL_DestroyTexture(scoreTexture);
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);

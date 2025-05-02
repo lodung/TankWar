@@ -16,13 +16,12 @@ public:
     bool isPause;
 
     SDL_Texture* levelTextTexture;
-    //SDL_Texture* levelNumberTexture;
     SDL_Texture* scoreTexture;
     SDL_Rect scoreRect;
     SDL_Rect levelTextRect;
-    //SDL_Rect levelNumberRect;
     Mix_Chunk* shootSound;
     TTF_Font* font;
+    TTF_Font* font2;
     SDL_Texture* startScreenTexture;
     Mix_Music* backGroundMusic;
     SDL_Window* window;
@@ -48,6 +47,25 @@ public:
     ~Game();
     void updateLevelDisplay();
     void updateScoreDisplay();
+
+    void showMenu();
+    void updateMenuDisplay();
+    int selectedOption;
+    SDL_Texture* titleTexture ;
+    SDL_Rect titleRect;
+    SDL_Texture* optionsTexture[3];
+    SDL_Rect optionsRect[3] ;
+    int gameMode = 0;
+    const char* menuOptions[3] = {"Start Game", "Ranking", "Exit"} ;
+
+    bool subMenu = false;
+    int selectedSubMenuOption = 0;
+    SDL_Texture* subMenuOptionsTexture[3];
+    SDL_Rect subMenuOptionsRect[3];
+    const char* subMenuOptions[3] = {"1 Player", "2 Players", "Back"};
+
+    void showSubMenu();
+    void updateSubMenuDisplay();
     void loadMusic();
     void generateWalls();
     void spawnEnemies();
