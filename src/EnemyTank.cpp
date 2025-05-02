@@ -29,7 +29,6 @@ void EnemyTank::moveTowardPlayer(int playerX, int playerY, const vector<Wall>& w
     if (--moveDelay > 0) return;
 
     moveDelay = 1000;
-    std::cout << moveDelay;
     int dxPrimary = 0, dyPrimary = 0;
     int dxSecondary = 0, dySecondary = 0;
 

@@ -17,8 +17,8 @@ public:
 
     SDL_Texture* levelTextTexture;
     //SDL_Texture* levelNumberTexture;
-   // SDL_Texture* scoreTexture;
-   // SDL_Rect scoreRect;
+    SDL_Texture* scoreTexture;
+    SDL_Rect scoreRect;
     SDL_Rect levelTextRect;
     //SDL_Rect levelNumberRect;
     Mix_Chunk* shootSound;
