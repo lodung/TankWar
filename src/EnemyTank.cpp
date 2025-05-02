@@ -28,7 +28,7 @@ void EnemyTank::calculateAngle() {
 void EnemyTank::moveTowardPlayer(int playerX, int playerY, const vector<Wall>& walls, const vector<Stone>& stones) {
     if (--moveDelay > 0) return;
 
-    moveDelay = 1000;
+    moveDelay = 10;
     int dxPrimary = 0, dyPrimary = 0;
     int dxSecondary = 0, dySecondary = 0;
 

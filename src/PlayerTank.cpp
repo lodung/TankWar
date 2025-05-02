@@ -23,7 +23,6 @@ PlayerTank::PlayerTank(int startX, int startY, SDL_Renderer* renderer, const std
     y = startY;
     rect = {x, y, TILE_SIZE, TILE_SIZE};
     active = true;
-    hp = 1;
     tankTexture = IMG_LoadTexture(renderer,texturePath.c_str());
     dirX = 0;
     dirY = -1;

@@ -5,7 +5,7 @@
 #include <fstream>
 #include <SDL_mixer.h>
 #include <ctime>
-Game::Game() : enemyNumber(2) {
+Game::Game() {
     running = true;
     if (TTF_Init() == -1) {
         std::cerr << "SDL_ttf could not initialize! Error: " << TTF_GetError() << std::endl;
@@ -46,7 +46,7 @@ Game::Game() : enemyNumber(2) {
         std::cerr << "Failed to load font! Error: " << TTF_GetError() << std::endl;
         running = false;
     }
-    font2 = TTF_OpenFont("font.ttf", 40);
+    font2 = TTF_OpenFont("font.ttf", 100);
     if (!font2) {
         std::cerr << "Failed to load font! Error: " << TTF_GetError() << std::endl;
         running = false;
@@ -58,23 +58,32 @@ Game::Game() : enemyNumber(2) {
     }
     Mix_VolumeMusic(40);
     selectedOption = 0;
-    selectedSubMenuOption = 0;
+    selectedSubMenuOption = 1;
     level = 16;
     score = 0;
     tocdo1 = 4; tocdo2 = 4;
+
+    int totalEnemiesToSpawn = 10;
+    int enemiesSpawned = 0;
+    Uint32 lastSpawnTime = 0;
+    const SDL_Point SPAWN_POINT = {1 * TILE_SIZE, 1 * TILE_SIZE};
+
     menu = true;
     isPause = 0;
     dangcap = std::to_string(level);
     srand(time(0));
     generateWalls();
     base = Base(7 * TILE_SIZE, 13 * TILE_SIZE, renderer);
-    player = PlayerTank(5 * TILE_SIZE, 13 * TILE_SIZE,renderer, "image/Tank.png",shootSound);
+    player = PlayerTank(13 * TILE_SIZE, 1 * TILE_SIZE,renderer, "image/Tank.png",shootSound);
     player2 = PlayerTank(9 * TILE_SIZE,  13* TILE_SIZE,renderer, "image/Player2.png",shootSound);
+    player.hp = 3;
+    player2.hp = 3;
     spawnEnemies();
     updateMenuDisplay();
     updateSubMenuDisplay();
     updateLevelDisplay();
     updateScoreDisplay();
+//    updateHpDisplay();
 }
 
 void Game::generateWalls() {
@@ -122,25 +131,17 @@ void Game::generateWalls() {
 }
 
 void Game::spawnEnemies() {
-    std::cout<<"emi spwan thanh cong";
-    enemies.clear();
-    for (int i = 0; i < enemyNumber; ++i) {
-        int ex, ey;
-        bool validPosition = false;
-        while (!validPosition) {
-            ex = (rand() % (MAP_WIDTH - 2) + 1) * TILE_SIZE;
-            ey = (rand() % (MAP_HEIGHT - 2) + 1) * TILE_SIZE;
-            validPosition = true;
-            for (const auto& wall : walls) {
-                if (wall.active && wall.x == ex && wall.y == ey) {
-                    validPosition = false;
-                    break;
-                }
-            }
-        }
-        enemies.push_back(EnemyTank(ex, ey,renderer));
+    if (enemies.size() < 3 &&          // Ít hơn 3 enemy trên map
+        enemiesSpawned < 10 &&         // Chưa spawn đủ 10 enemy
+        SDL_GetTicks() - lastSpawnTime >= 3000) // Đảm bảo delay 3s
+    {
+        enemies.push_back(EnemyTank(SPAWN_POINT.x, SPAWN_POINT.y, renderer));
+        enemiesSpawned++;
+        lastSpawnTime = SDL_GetTicks();
+        std::cout << "Spawned enemy at (" << SPAWN_POINT.x << ", " << SPAWN_POINT.y << ")\n";
     }
 }
+
 
 void Game::handleEvents() {
     SDL_Event event;
@@ -226,8 +227,7 @@ void Game::updateScoreDisplay() {
 }
 void Game::updateMenuDisplay() {
     std::cout<< "\n khoi tao menu ";
-    // Tạo texture cho tiêu đề
-    SDL_Color titleColor = {255, 0, 0}; // Màu đỏ cho tiêu đề
+    SDL_Color titleColor = {255, 0, 0};
     SDL_Surface* titleSurface = TTF_RenderText_Solid(font2, "TANK WAR", titleColor);
     titleTexture = SDL_CreateTextureFromSurface(renderer, titleSurface);
     titleRect = {SCREEN_WIDTH / 2 - titleSurface->w / 2, 100, titleSurface->w, titleSurface->h};
@@ -269,13 +269,9 @@ void Game::updateSubMenuDisplay() {
              subMenuOptionsTexture[i] = SDL_CreateTextureFromSurface(renderer, optionSurface);
              subMenuOptionsRect[i] = {SCREEN_WIDTH / 2 - optionSurface->w / 2, 250 + i * 70, optionSurface->w, optionSurface->h}; // Vị trí tương tự menu chính
              SDL_FreeSurface(optionSurface);
-        } else {
-            std::cerr << "Failed to create surface for submenu option: " << TTF_GetError() << std::endl;
-             // Xử lý lỗi nếu cần, ví dụ đặt texture thành nullptr
-             subMenuOptionsTexture[i] = nullptr;
         }
     }
-     std::cout<<"\nupdate sub menu thanh cong"; // Thông báo debug
+     std::cout<<"\nupdate sub menu thanh cong";
 }
 
 void Game::showMenu() {
@@ -344,7 +340,6 @@ void Game::showMenu() {
     SDL_RenderDrawRect(renderer, &selectedRect);
 
     SDL_RenderPresent(renderer);
-    std::cout<<" \nkhoi tao menu thanh cong";
 }
 void Game::showSubMenu() {
     // Xử lý sự kiện menu con
@@ -367,7 +362,7 @@ void Game::showSubMenu() {
                 case SDLK_RETURN: // Phím Enter
                     if (selectedSubMenuOption == 0) { // 1 Player
                         gameMode = 1;
-                        subMenu = false; // Thoát subMenu, bắt đầu game
+                        subMenu = false;
                         // Đảm bảo player2 không hoạt động nếu cần
                         player2.active = false;
                         player2.rect = {0,0,0,0}; // Ẩn player 2 đi
@@ -376,9 +371,6 @@ void Game::showSubMenu() {
                     else if (selectedSubMenuOption == 1) {
                         gameMode = 2;
                         subMenu = false;
-                        // (Việc reset vị trí có thể cần làm lại khi bắt đầu level mới hoặc game mới)
-                         /*player2 = PlayerTank(9 * TILE_SIZE, 13* TILE_SIZE,renderer, "image/Player2.png",shootSound);
-                         player2.active = true;*/
                         std::cout << "Starting 2 Players Game" << std::endl;
                     }
                     else if (selectedSubMenuOption == 2) { // Back
@@ -436,6 +428,7 @@ void Game::update() {
     if (gameMode == 2 && player2.active) player2.updateBullets();
 
     //Cử chỉ của enemy
+    spawnEnemies();
     for (auto& enemy : enemies) {
         enemy.moveTowardPlayer(player.x,player.y,walls,stones);
         enemy.updateBullets();
@@ -628,7 +621,9 @@ void Game::update() {
     );
 
     //Kiểm tra điều kiện thắng
-    if (enemies.empty()) {
+    if (enemiesSpawned >= 10 && enemies.empty()) {
+        enemiesSpawned = 0;
+        lastSpawnTime = 0;
         std::cout << "WIN" << std::endl;
         level++;
         if (level > 35) {
@@ -639,11 +634,13 @@ void Game::update() {
         dangcap = std::to_string(level);
         int oldHp = player.hp;
         player = PlayerTank(5 * TILE_SIZE, 13 * TILE_SIZE, renderer, "image/Tank.png",shootSound);
+        player.hp = 1;
         if(oldHp > 0) player.hp = oldHp;
         int oldHp2 = player2.hp;
+        player2.hp = 1;
         if (gameMode == 2){
-        player2 = PlayerTank(9 * TILE_SIZE, 13 * TILE_SIZE, renderer, "image/Player2.png",shootSound);
-        if(oldHp2 > 0) player2.hp = oldHp2;
+            player2 = PlayerTank(9 * TILE_SIZE, 13 * TILE_SIZE, renderer, "image/Player2.png",shootSound);
+            if(oldHp2 > 0) player2.hp = oldHp2;
         }
         updateLevelDisplay();
         updateScoreDisplay();
@@ -668,7 +665,6 @@ void Game::render() {
 
     SDL_SetRenderDrawColor(renderer, 128, 128, 128, 255);
     SDL_RenderClear(renderer);
-    std::cout<<gameMode<<endl;
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
     for (int i = 1; i < MAP_HEIGHT-1; ++i) {
     for (int j = 1; j < MAP_WIDTH-6; ++j) {

@@ -14,6 +14,7 @@
 class Game {
 public:
     bool isPause;
+    bool lose;
 
     SDL_Texture* levelTextTexture;
     SDL_Texture* scoreTexture;
@@ -36,7 +37,7 @@ public:
     Base base;
     PlayerTank player;
     PlayerTank player2;
-    int enemyNumber;
+   // int enemyNumber;
     std::vector<EnemyTank> enemies;
     int level;
     bool menu;
@@ -45,8 +46,14 @@ public:
     int score;
     Game();
     ~Game();
+    const SDL_Point SPAWN_POINT = {1 * TILE_SIZE, 1 * TILE_SIZE};
+    int totalEnemiesToSpawn;
+    int enemiesSpawned;
+    Uint32 lastSpawnTime;
+
     void updateLevelDisplay();
     void updateScoreDisplay();
+    //void updateHpDisplay();
 
     void showMenu();
     void updateMenuDisplay();
@@ -59,7 +66,7 @@ public:
     const char* menuOptions[3] = {"Start Game", "Ranking", "Exit"} ;
 
     bool subMenu = false;
-    int selectedSubMenuOption = 0;
+    int selectedSubMenuOption;
     SDL_Texture* subMenuOptionsTexture[3];
     SDL_Rect subMenuOptionsRect[3];
     const char* subMenuOptions[3] = {"1 Player", "2 Players", "Back"};
