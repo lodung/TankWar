@@ -69,11 +69,11 @@ Game::Game() {
     Mix_VolumeMusic(40);
     selectedOption = 0;
     selectedSubMenuOption = 0;
-    level = 1;
+    level = 35;
     score = 0;
     tocdo1 = 4; tocdo2 = 4;
 
-    int totalEnemiesToSpawn = 10;
+  //  int totalEnemiesToSpawn = 10;
     enemiesSpawned = 0;
     Uint32 lastSpawnTime = 0;
     const SDL_Point SPAWN_POINT = {1 * TILE_SIZE, 1 * TILE_SIZE};
@@ -303,7 +303,45 @@ void Game::showGameOverMessage() {
 
     SDL_Delay(2000);
 }
+void Game::showWinMessage() {
+    // Tạo thông báo "YOU WIN!"
+    SDL_Color winColor = {0, 255, 0}; // Màu xanh lá
+    SDL_Surface* winSurface = TTF_RenderUTF8_Solid(fontLevelUp, "YOU WIN!", winColor);
+    SDL_Texture* winTexture = SDL_CreateTextureFromSurface(renderer, winSurface);
 
+    // Vị trí hiển thị thông báo "YOU WIN!" ở giữa màn hình
+    SDL_Rect winRect = {
+        SCREEN_WIDTH / 2 - winSurface->w / 2,
+        SCREEN_HEIGHT / 2 - winSurface->h / 2 - 50,
+        winSurface->w,
+        winSurface->h
+    };
+
+    SDL_Color infoColor = {255, 255, 255}; // Màu trắng
+    SDL_Surface* infoSurface = TTF_RenderUTF8_Solid(font, "Chúc mừng bạn đã chiến thắng và hoàn tất hết màn chơi!", infoColor);
+    SDL_Texture* infoTexture = SDL_CreateTextureFromSurface(renderer, infoSurface);
+    SDL_Rect infoRect = {
+        SCREEN_WIDTH / 2 - infoSurface->w / 2,
+        winRect.y + winRect.h + 20,
+        infoSurface->w,
+        infoSurface->h
+    };
+    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255); // Màu nền đen
+    SDL_RenderClear(renderer);
+
+    SDL_RenderCopy(renderer, winTexture, NULL, &winRect);
+    SDL_RenderCopy(renderer, infoTexture, NULL, &infoRect);
+
+    SDL_RenderPresent(renderer);
+
+    // Giải phóng tài nguyên
+    SDL_FreeSurface(winSurface);
+    SDL_DestroyTexture(winTexture);
+    SDL_FreeSurface(infoSurface);
+    SDL_DestroyTexture(infoTexture);
+
+    SDL_Delay(3000);
+}
 void Game::updateMenuDisplay() {
     SDL_Color titleColor = {255, 0, 0};
     SDL_Surface* titleSurface = TTF_RenderText_Solid(fontbrick, "TANKWAR", titleColor);
@@ -686,10 +724,13 @@ void Game::update() {
         lastSpawnTime = 0;
         level++;
         if (level > 35) {
+            showWinMessage();
+            saveScore();
             SDL_Delay(1500);
+            menu = true;
             over = false;
         }
-        showLevelUpMessage();
+        if (level <=35 ) showLevelUpMessage();
         dangcap = std::to_string(level);
         int oldHp = player.hp;
         player = PlayerTank(5 * TILE_SIZE, 13 * TILE_SIZE, renderer, "image/Tank.png",shootSound);
@@ -839,7 +880,6 @@ void Game::showRanking() {
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255); // Nền đen
     SDL_RenderClear(renderer);
 
-    // Vẽ tiêu đề
     SDL_Color titleColor = {153, 51, 255}; // Màu tím hoàng kim sang trọng
     SDL_Surface* titleSurface = TTF_RenderText_Solid(font2, "RANKING", titleColor);
     SDL_Texture* titleTexture = SDL_CreateTextureFromSurface(renderer, titleSurface);

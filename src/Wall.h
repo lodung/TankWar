@@ -50,6 +50,7 @@ public:
     int x,y;
     SDL_Rect rect;
     SDL_Texture *baseTexture;
+    int hp;
     bool active;
     Base(){};
     Base(int startX, int startY, SDL_Renderer* renderer);

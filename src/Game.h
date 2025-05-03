@@ -58,7 +58,7 @@ public:
     Game();
     ~Game();
     const SDL_Point SPAWN_POINT = {1 * TILE_SIZE, 1 * TILE_SIZE};
-    int totalEnemiesToSpawn;
+   // int totalEnemiesToSpawn;
     int enemiesSpawned;
     Uint32 lastSpawnTime;
     void updateLevelDisplay();
@@ -79,6 +79,7 @@ public:
     SDL_Texture* subMenuOptionsTexture[3];
     SDL_Rect subMenuOptionsRect[3];
     const char* subMenuOptions[3] = {"1 Player", "2 Players", "Back"};
+    void showWinMessage();
     void showGameOverMessage();
     void saveScore();
     void loadScores();
