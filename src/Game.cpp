@@ -51,6 +51,16 @@ Game::Game() {
         std::cerr << "Failed to load font! Error: " << TTF_GetError() << std::endl;
         running = false;
     }
+    fontbrick = TTF_OpenFont("brick.ttf", 100);
+    if (!fontbrick) {
+        std::cerr << "Failed to load font! Error: " << TTF_GetError() << std::endl;
+        running = false;
+    }
+    fontLevelUp = TTF_OpenFont("levelup.ttf", 50);
+    if (!fontLevelUp) {
+    std::cerr << "Failed to load level up font! Error: " << TTF_GetError() << std::endl;
+    running = false;
+    }
     shootSound = Mix_LoadWAV("sound/shoot.mp3");
     if (!shootSound) {
         std::cerr << "Failed to load shoot sound! Error: " << Mix_GetError() << std::endl;
@@ -58,13 +68,13 @@ Game::Game() {
     }
     Mix_VolumeMusic(40);
     selectedOption = 0;
-    selectedSubMenuOption = 1;
-    level = 16;
+    selectedSubMenuOption = 0;
+    level = 1;
     score = 0;
     tocdo1 = 4; tocdo2 = 4;
 
     int totalEnemiesToSpawn = 10;
-    int enemiesSpawned = 0;
+    enemiesSpawned = 0;
     Uint32 lastSpawnTime = 0;
     const SDL_Point SPAWN_POINT = {1 * TILE_SIZE, 1 * TILE_SIZE};
 
@@ -74,7 +84,7 @@ Game::Game() {
     srand(time(0));
     generateWalls();
     base = Base(7 * TILE_SIZE, 13 * TILE_SIZE, renderer);
-    player = PlayerTank(13 * TILE_SIZE, 1 * TILE_SIZE,renderer, "image/Tank.png",shootSound);
+    player = PlayerTank(5 * TILE_SIZE, 13 * TILE_SIZE,renderer, "image/Tank.png",shootSound);
     player2 = PlayerTank(9 * TILE_SIZE,  13* TILE_SIZE,renderer, "image/Player2.png",shootSound);
     player.hp = 3;
     player2.hp = 3;
@@ -84,6 +94,8 @@ Game::Game() {
     updateLevelDisplay();
     updateScoreDisplay();
     updateHpDisplay();
+    loadScores();
+    updateRankingDisplay();
 }
 
 void Game::generateWalls() {
@@ -131,9 +143,7 @@ void Game::generateWalls() {
 }
 
 void Game::spawnEnemies() {
-    if (enemies.size() < 3 &&          // Ít hơn 3 enemy trên map
-        enemiesSpawned < 10 &&         // Chưa spawn đủ 10 enemy
-        SDL_GetTicks() - lastSpawnTime >= 3000) // Đảm bảo delay 3s
+    if (enemies.size() < 3 && enemiesSpawned < 10 && SDL_GetTicks() - lastSpawnTime >= 3000)
     {
         enemies.push_back(EnemyTank(SPAWN_POINT.x, SPAWN_POINT.y, renderer));
         enemiesSpawned++;
@@ -165,46 +175,41 @@ void Game::handleEvents() {
     }
 
     const Uint8* keystates = SDL_GetKeyboardState(nullptr); // Lấy trạng thái của tất cả các phím
-
-    // Di chuyển Player 1
-
     if(!isPause){
-    if (player.active){
-    if (keystates[SDL_SCANCODE_UP]) {
-        player.move(0, -tocdo1, walls, stones);  // Di chuyển lên
-    }
-    if (keystates[SDL_SCANCODE_DOWN]) {
-        player.move(0, tocdo1, walls, stones);   // Di chuyển xuống
-    }
-    if (keystates[SDL_SCANCODE_LEFT]) {
-        player.move(-tocdo1, 0, walls, stones);  // Di chuyển sang trái
-    }
-    if (keystates[SDL_SCANCODE_RIGHT]) {
-        player.move(tocdo1, 0, walls, stones);   // Di chuyển sang phải
-    }
-    if (keystates[SDL_SCANCODE_SPACE]) {
-        player.shoot(renderer);  // Bắn đạn
-    }
+        if (player.active){
+            if (keystates[SDL_SCANCODE_UP]) {
+                player.move(0, -tocdo1, walls, stones);  // Di chuyển lên
+            }
+            if (keystates[SDL_SCANCODE_DOWN]) {
+                player.move(0, tocdo1, walls, stones);   // Di chuyển xuống
+            }
+            if (keystates[SDL_SCANCODE_LEFT]) {
+                player.move(-tocdo1, 0, walls, stones);  // Di chuyển sang trái
+            }
+            if (keystates[SDL_SCANCODE_RIGHT]) {
+                player.move(tocdo1, 0, walls, stones);   // Di chuyển sang phải
+            }
+            if (keystates[SDL_SCANCODE_SPACE]) {
+                player.shoot(renderer);  // Bắn đạn
+            }
     }
     if(player2.active){
-
-    // Di chuyển Player 2
-    if (keystates[SDL_SCANCODE_W]) {
-        player2.move(0, -tocdo2, walls, stones);
-    }
-    if (keystates[SDL_SCANCODE_S]) {
-        player2.move(0, tocdo2, walls, stones);
-    }
-    if (keystates[SDL_SCANCODE_A]) {
-        player2.move(-tocdo2, 0, walls, stones);
-    }
-    if (keystates[SDL_SCANCODE_D]) {
-        player2.move(tocdo2, 0, walls, stones);
-    }
-    if (keystates[SDL_SCANCODE_L]) {
-        player2.shoot(renderer);
-    }
-    }
+        if (keystates[SDL_SCANCODE_W]) {
+            player2.move(0, -tocdo2, walls, stones);
+        }
+        if (keystates[SDL_SCANCODE_S]) {
+            player2.move(0, tocdo2, walls, stones);
+        }
+        if (keystates[SDL_SCANCODE_A]) {
+            player2.move(-tocdo2, 0, walls, stones);
+        }
+        if (keystates[SDL_SCANCODE_D]) {
+            player2.move(tocdo2, 0, walls, stones);
+        }
+        if (keystates[SDL_SCANCODE_L]) {
+            player2.shoot(renderer);
+        }
+        }
     }
 }
 
@@ -233,17 +238,75 @@ void Game::updateHpDisplay(){
     SDL_FreeSurface(hpSurface);
     if (gameMode == 2){
     std::string strHp2 = "HP II: " + std::to_string(player2.hp);
-   // SDL_Color textColor = {0, 0 ,0};
     SDL_Surface* hp2Surface = TTF_RenderText_Solid(font, strHp2.c_str(),textColor);
     hp2Texture = SDL_CreateTextureFromSurface(renderer,hp2Surface);
     hp2Rect = {SCREEN_WIDTH - 200, 150, hp2Surface->w, hp2Surface->h};
-    SDL_FreeSurface(hpSurface);
+    SDL_FreeSurface(hp2Surface);
     }
+
 }
+void Game::showLevelUpMessage() {
+    SDL_Color textColor = {255, 255, 0}; // Màu vàng
+    SDL_Surface* textSurface = TTF_RenderText_Solid(fontLevelUp, "LEVEL UP!", textColor);
+    SDL_Texture* textTexture = SDL_CreateTextureFromSurface(renderer, textSurface);
+
+    SDL_Rect textRect = {
+        SCREEN_WIDTH / 2 - textSurface->w / 2,
+        SCREEN_HEIGHT / 2 - textSurface->h / 2,
+        textSurface->w,
+        textSurface->h
+    };
+
+    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255); // Màu nền đen
+    SDL_RenderClear(renderer);
+    SDL_RenderCopy(renderer, textTexture, NULL, &textRect);
+    SDL_RenderPresent(renderer);
+    SDL_FreeSurface(textSurface);
+    SDL_DestroyTexture(textTexture);
+    SDL_Delay(1500);
+}
+void Game::showGameOverMessage() {
+    SDL_Color gameOverColor = {255, 0, 0}; // Màu đỏ
+    SDL_Surface* gameOverSurface = TTF_RenderText_Solid(fontLevelUp, "GAME OVER", gameOverColor);
+    SDL_Texture* gameOverTexture = SDL_CreateTextureFromSurface(renderer, gameOverSurface);
+
+    // Vị trí hiển thị thông báo "GAME OVER" ở giữa màn hình
+    SDL_Rect gameOverRect = {
+        SCREEN_WIDTH / 2 - gameOverSurface->w / 2,
+        SCREEN_HEIGHT / 2 - gameOverSurface->h / 2,
+        gameOverSurface->w,
+        gameOverSurface->h
+    };
+
+    // Tạo thông báo "Lưu điểm và quay trở lại menu chính"
+    SDL_Color infoColor = {255, 255, 255}; // Màu trắng
+    SDL_Surface* infoSurface = TTF_RenderUTF8_Solid(font, "Lưu điểm và quay trở lại menu chính", infoColor);
+    SDL_Texture* infoTexture = SDL_CreateTextureFromSurface(renderer, infoSurface);
+
+    // Vị trí hiển thị thông báo dưới cùng màn hình
+    SDL_Rect infoRect = {SCREEN_WIDTH / 2 - infoSurface->w / 2, SCREEN_HEIGHT - infoSurface->h - 50,
+        infoSurface->w,
+        infoSurface->h
+    };
+    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255); // Màu nền đen
+    SDL_RenderClear(renderer);
+
+    SDL_RenderCopy(renderer, gameOverTexture, NULL, &gameOverRect);
+    SDL_RenderCopy(renderer, infoTexture, NULL, &infoRect);
+
+    SDL_RenderPresent(renderer);
+
+    SDL_FreeSurface(gameOverSurface);
+    SDL_DestroyTexture(gameOverTexture);
+    SDL_FreeSurface(infoSurface);
+    SDL_DestroyTexture(infoTexture);
+
+    SDL_Delay(2000);
+}
+
 void Game::updateMenuDisplay() {
-    std::cout<< "\n khoi tao menu ";
     SDL_Color titleColor = {255, 0, 0};
-    SDL_Surface* titleSurface = TTF_RenderText_Solid(font2, "TANK WAR", titleColor);
+    SDL_Surface* titleSurface = TTF_RenderText_Solid(fontbrick, "TANKWAR", titleColor);
     titleTexture = SDL_CreateTextureFromSurface(renderer, titleSurface);
     titleRect = {SCREEN_WIDTH / 2 - titleSurface->w / 2, 100, titleSurface->w, titleSurface->h};
     SDL_FreeSurface(titleSurface);
@@ -261,12 +324,10 @@ void Game::updateMenuDisplay() {
         optionsTexture[i] = SDL_CreateTextureFromSurface(renderer, optionSurface);
         optionsRect[i] = {SCREEN_WIDTH / 2 - optionSurface->w / 2, 250 + i * 70, optionSurface->w, optionSurface->h};
         SDL_FreeSurface(optionSurface);
-        std::cout<<"\nupdate menu thanh cong";
     }
 }
 
 void Game::updateSubMenuDisplay() {
-    // Tạo texture cho các tùy chọn menu con
     for (int i = 0; i < 3; i++) {
         SDL_Color optionColor;
         if (i == selectedSubMenuOption) {
@@ -286,11 +347,9 @@ void Game::updateSubMenuDisplay() {
              SDL_FreeSurface(optionSurface);
         }
     }
-     std::cout<<"\nupdate sub menu thanh cong";
 }
 
 void Game::showMenu() {
-    // Xử lý sự kiện menu
     SDL_Event event;
     while (SDL_PollEvent(&event)) {
         if (event.type == SDL_QUIT) {
@@ -308,20 +367,17 @@ void Game::showMenu() {
                     updateMenuDisplay();
                     break;
                 case SDLK_RETURN:
-                    if (selectedOption == 0) {
-                        // Start Game
+                    if (selectedOption == 0) {// Start Game
                         menu = false;
                         subMenu = true;
                         selectedSubMenuOption = 3;
                         updateSubMenuDisplay();
                     }
-                    else if (selectedOption == 1) {
-                        // Ranking - Hiển thị bảng xếp hạng (có thể thêm sau)
-                        // Tạm thời chỉ hiển thị thông báo
-                        SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_INFORMATION,
-                                               "Ranking",
-                                               "Ranking se som duoc cap nhat",
-                                               window);
+                    else if (selectedOption == 1) {// Hiển thị màn hình xếp hạng
+                    showingRanking = true;
+                    menu = false;
+                    loadScores(); // Tải lại điểm số mới nhất
+                    updateRankingDisplay();
                     }
                     else if (selectedOption == 2) {
                         // Exit
@@ -333,18 +389,15 @@ void Game::showMenu() {
             }
         }
     }// Render menu
-    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255); // Màu đen cho nền
+    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
     SDL_RenderClear(renderer);
-
-    // Vẽ tiêu đề
     SDL_RenderCopy(renderer, titleTexture, NULL, &titleRect);
 
-    // Vẽ các tùy chọn menu
     for (int i = 0; i < 3; i++) {
         SDL_RenderCopy(renderer, optionsTexture[i], NULL, &optionsRect[i]);
     }
 
-    // Tạo hiệu ứng chọn tùy chọn bằng cách vẽ mũi tên hoặc hình chữ nhật xung quanh
+    // Tạo hiệu ứng bằng hình chữ nhật xung quanh
     SDL_SetRenderDrawColor(renderer, 255, 255, 0, 255); // Màu vàng cho viền
     SDL_Rect selectedRect = {
         optionsRect[selectedOption].x - 20,
@@ -353,7 +406,6 @@ void Game::showMenu() {
         optionsRect[selectedOption].h + 10
     };
     SDL_RenderDrawRect(renderer, &selectedRect);
-
     SDL_RenderPresent(renderer);
 }
 void Game::showSubMenu() {
@@ -362,7 +414,7 @@ void Game::showSubMenu() {
     while (SDL_PollEvent(&event)) {
         if (event.type == SDL_QUIT) {
             running = false;
-            subMenu = false; // Thoát khỏi trạng thái subMenu
+            subMenu = false;
         }
         else if (event.type == SDL_KEYDOWN) {
             switch (event.key.keysym.sym) {
@@ -378,28 +430,22 @@ void Game::showSubMenu() {
                     if (selectedSubMenuOption == 0) { // 1 Player
                         gameMode = 1;
                         subMenu = false;
-                        // Đảm bảo player2 không hoạt động nếu cần
                         player2.active = false;
                         player2.rect = {0,0,0,0}; // Ẩn player 2 đi
-                        std::cout << "Starting 1 Player Game" << std::endl;
                     }
                     else if (selectedSubMenuOption == 1) {
                         gameMode = 2;
                         subMenu = false;
-                        std::cout << "Starting 2 Players Game" << std::endl;
                     }
                     else if (selectedSubMenuOption == 2) { // Back
                         subMenu = false; // Thoát subMenu
                         menu = true;     // Quay lại menu chính
-                        updateMenuDisplay(); // Cập nhật lại menu chính (để highlight đúng)
-                        std::cout << "Returning to Main Menu" << std::endl;
-                    }
+                        updateMenuDisplay(); // Cập nhật lại menu chính
                     break;
                  case SDLK_ESCAPE: // Phím Escape cũng có thể dùng để Back
                     subMenu = false;
                     menu = true;
                     updateMenuDisplay();
-                     std::cout << "Returning to Main Menu (ESC)" << std::endl;
                     break;
             }
         }
@@ -409,12 +455,11 @@ void Game::showSubMenu() {
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255); // Màu đen cho nền
     SDL_RenderClear(renderer);
 
-    // Vẽ tiêu đề (có thể dùng lại titleTexture của menu chính hoặc tạo cái mới)
     SDL_RenderCopy(renderer, titleTexture, NULL, &titleRect);
 
     // Vẽ các tùy chọn menu con
     for (int i = 0; i < 3; i++) {
-         if (subMenuOptionsTexture[i]) { // Chỉ render nếu texture hợp lệ
+         if (subMenuOptionsTexture[i]) {
             SDL_RenderCopy(renderer, subMenuOptionsTexture[i], NULL, &subMenuOptionsRect[i]);
          }
     }
@@ -432,12 +477,12 @@ void Game::showSubMenu() {
      }
 
     SDL_RenderPresent(renderer);
-     //std::cout<<" \nrender sub menu thanh cong"; // Bỏ comment nếu cần debug
+}
 }
 
 
 void Game::update() {
-    if (isPause || menu || subMenu) return;
+    if (isPause) return;
     //Update đạn
     if (player.active) player.updateBullets();
     if (gameMode == 2 && player2.active) player2.updateBullets();
@@ -600,9 +645,9 @@ void Game::update() {
         }
 
         if (gameMode == 1 && player.active == false){
-            running = false;
+            over = true;
         }else if (gameMode == 2 && player.active == false && player2.active == false){
-            running = false;
+            over = true;
         }
     }
 
@@ -639,22 +684,21 @@ void Game::update() {
     if (enemiesSpawned >= 10 && enemies.empty()) {
         enemiesSpawned = 0;
         lastSpawnTime = 0;
-        std::cout << "WIN" << std::endl;
         level++;
         if (level > 35) {
-            std::cout<<"diem so: "<<score;
             SDL_Delay(1500);
-            running = false;
+            over = false;
         }
+        showLevelUpMessage();
         dangcap = std::to_string(level);
         int oldHp = player.hp;
         player = PlayerTank(5 * TILE_SIZE, 13 * TILE_SIZE, renderer, "image/Tank.png",shootSound);
         player.hp = 1;
         if(oldHp > 0) player.hp = oldHp;
-        int oldHp2 = player2.hp;
-        player2.hp = 1;
         if (gameMode == 2){
+            int oldHp2 = player2.hp;
             player2 = PlayerTank(9 * TILE_SIZE, 13 * TILE_SIZE, renderer, "image/Player2.png",shootSound);
+            player2.hp = 1;
             if(oldHp2 > 0) player2.hp = oldHp2;
         }
         updateLevelDisplay();
@@ -721,6 +765,16 @@ void Game::run() {
         else if (subMenu){
             showSubMenu();
         }
+        else if (showingRanking) {
+            showRanking();
+        }
+        else if (over) {
+                showGameOverMessage();
+                over = false;
+                saveScore(); // Lưu điểm
+                SDL_Delay(100); // Đợi một chút để hiển thị thông điệp kết thúc (nếu cần)
+                menu = true; // Thoát game
+        }
         else {
         handleEvents();
         update();
@@ -731,7 +785,119 @@ void Game::run() {
         }
     }
 }
+void Game::saveScore() {
+    // Mở file để ghi (append mode)
+    std::ofstream file("scores.txt", std::ios::app);
+    if (file.is_open()) {
+        file << score << std::endl;
+        file.close();
+        std::cout << "Score saved: " << score << std::endl;
+    } else {
+        std::cerr << "Unable to open scores.txt for writing" << std::endl;
+    }
+}
+void Game::loadScores() {
+    highScores.clear();
+    std::ifstream file("scores.txt");
 
+    if (file.is_open()) {
+        int value;
+        while (file >> value) {
+            highScores.push_back(value);
+        }
+        file.close();
+
+        // Sắp xếp điểm số từ cao đến thấp
+        std::sort(highScores.begin(), highScores.end(), std::greater<int>());
+
+        // Giữ lại tối đa 5 điểm cao nhất
+        if (highScores.size() > 5) {
+            highScores.resize(5);
+        }
+
+        std::cout << "Loaded " << highScores.size() << " scores" << std::endl;
+    } else {
+        std::cout << "No scores file found, will create one when game ends" << std::endl;
+    }
+}
+void Game::showRanking() {
+    // Xử lý sự kiện
+    SDL_Event event;
+    while (SDL_PollEvent(&event)) {
+        if (event.type == SDL_QUIT) {
+            running = false;
+            showingRanking = false;
+        }
+        else if (event.type == SDL_KEYDOWN) {
+            if (event.key.keysym.sym == SDLK_ESCAPE || event.key.keysym.sym == SDLK_RETURN) {
+                showingRanking = false;
+                menu = true;
+                updateMenuDisplay();
+            }
+        }
+    }
+    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255); // Nền đen
+    SDL_RenderClear(renderer);
+
+    // Vẽ tiêu đề
+    SDL_Color titleColor = {153, 51, 255}; // Màu tím hoàng kim sang trọng
+    SDL_Surface* titleSurface = TTF_RenderText_Solid(font2, "RANKING", titleColor);
+    SDL_Texture* titleTexture = SDL_CreateTextureFromSurface(renderer, titleSurface);
+    SDL_Rect titleRect = {SCREEN_WIDTH / 2 - titleSurface->w / 2, 30, titleSurface->w, titleSurface->h};
+    SDL_RenderCopy(renderer, titleTexture, NULL, &titleRect);
+    SDL_FreeSurface(titleSurface);
+    SDL_DestroyTexture(titleTexture);
+
+    updateRankingDisplay();
+
+    SDL_Color textColor = {255, 255, 255}; // Màu trắng
+    SDL_Surface* backSurface = TTF_RenderUTF8_Solid(font, "Ấn ESC hoặc Enter để quay trở lại menu", textColor);
+    SDL_Texture* backTexture = SDL_CreateTextureFromSurface(renderer, backSurface);
+    SDL_Rect backRect = {SCREEN_WIDTH / 2 - backSurface->w / 2, SCREEN_HEIGHT - 100, backSurface->w, backSurface->h};
+    SDL_RenderCopy(renderer, backTexture, NULL, &backRect);
+    SDL_FreeSurface(backSurface);
+    SDL_DestroyTexture(backTexture);
+
+    SDL_RenderPresent(renderer);
+}
+void Game::updateRankingDisplay() {
+
+    std::vector<std::string> rankingLines;
+
+    if (highScores.empty()) {
+        rankingLines.push_back("No scores yet!");
+    } else {
+        for (size_t i = 0; i < highScores.size(); ++i) {
+            rankingLines.push_back("#" + std::to_string(i + 1) + ": " + std::to_string(highScores[i]));
+        }
+    }
+    // Xóa texture cũ (nếu có)
+    if (rankingTexture) {
+        SDL_DestroyTexture(rankingTexture);
+        rankingTexture = nullptr;
+    }
+
+    SDL_Color textColor = {57, 255, 20}; // Màu xanh lá
+    int startY = 200; // Vị trí Y bắt đầu render
+    int lineSpacing = 40; // Khoảng cách giữa các dòng
+
+    for (size_t i = 0; i < rankingLines.size(); ++i) {
+        SDL_Surface* lineSurface = TTF_RenderText_Solid(font, rankingLines[i].c_str(), textColor);
+        SDL_Texture* lineTexture = SDL_CreateTextureFromSurface(renderer, lineSurface);
+
+        SDL_Rect lineRect = {
+            SCREEN_WIDTH / 2 - lineSurface->w / 2, // Canh giữa theo chiều ngang
+            startY + static_cast<int>(i) * lineSpacing, // Tính toán vị trí Y cho từng dòng
+            lineSurface->w,
+            lineSurface->h
+        };
+
+        SDL_RenderCopy(renderer, lineTexture, NULL, &lineRect);
+        // Giải phóng surface và texture sau khi render (quan trọng không lỗi game)
+        SDL_FreeSurface(lineSurface);
+        SDL_DestroyTexture(lineTexture);
+    }
+}
 
 Game::~Game() {
     Mix_FreeChunk(shootSound);
@@ -747,7 +913,7 @@ Game::~Game() {
     SDL_DestroyTexture(levelTextTexture);
     SDL_DestroyTexture(scoreTexture);
     SDL_DestroyTexture(hpTexture);
-    SDL_DestroyTexture(hp2Texture);
+    if (hp2Texture) SDL_DestroyTexture(hp2Texture);
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
     SDL_Quit();

@@ -90,10 +90,12 @@
 	<SDL.h>
 	<SDL_image.h>
 
-1746204586 d:\tankwar\src\game.h
+1746280615 d:\tankwar\src\game.h
 	<SDL.h>
 	<SDL_image.h>
 	<vector>
+	<fstream>
+	<algorithm>
 	<SDL_ttf.h>
 	<SDL_mixer.h>
 	"PlayerTank.h"
@@ -101,7 +103,7 @@
 	"Wall.h"
 	"Constants.h"
 
-1746205015 source:d:\tankwar\src\game.cpp
+1746280416 source:d:\tankwar\src\game.cpp
 	"Game.h"
 	<iostream>
 	<cstdlib>

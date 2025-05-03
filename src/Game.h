@@ -4,6 +4,8 @@
 #include <SDL.h>
 #include <SDL_image.h>
 #include <vector>
+#include <fstream>
+#include <algorithm>
 #include <SDL_ttf.h>
 #include <SDL_mixer.h>
 #include "PlayerTank.h"
@@ -15,18 +17,23 @@ class Game {
 public:
     bool isPause;
     bool lose;
-
+    bool showingRanking = false;
+    bool over = false;
     SDL_Texture* levelTextTexture;
     SDL_Texture* scoreTexture;
     SDL_Texture* hpTexture;
-    SDL_Rect hpRect;
     SDL_Texture* hp2Texture;
+    SDL_Texture* rankingTexture;
+    SDL_Rect hpRect;
+    SDL_Rect rankingRect;
     SDL_Rect hp2Rect;
     SDL_Rect scoreRect;
     SDL_Rect levelTextRect;
     Mix_Chunk* shootSound;
     TTF_Font* font;
     TTF_Font* font2;
+    TTF_Font* fontbrick;
+    TTF_Font* fontLevelUp;
     SDL_Texture* startScreenTexture;
     Mix_Music* backGroundMusic;
     SDL_Window* window;
@@ -41,12 +48,12 @@ public:
     Base base;
     PlayerTank player;
     PlayerTank player2;
-   //a int enemyNumber;
     std::vector<EnemyTank> enemies;
     int level;
     bool menu;
     int tocdo1,tocdo2;
     std::string dangcap;
+    std::vector<int> highScores;
     int score;
     Game();
     ~Game();
@@ -54,11 +61,10 @@ public:
     int totalEnemiesToSpawn;
     int enemiesSpawned;
     Uint32 lastSpawnTime;
-
     void updateLevelDisplay();
     void updateScoreDisplay();
     void updateHpDisplay();
-
+    void showLevelUpMessage();
     void showMenu();
     void updateMenuDisplay();
     int selectedOption;
@@ -68,13 +74,16 @@ public:
     SDL_Rect optionsRect[3] ;
     int gameMode = 0;
     const char* menuOptions[3] = {"Start Game", "Ranking", "Exit"} ;
-
     bool subMenu = false;
     int selectedSubMenuOption;
     SDL_Texture* subMenuOptionsTexture[3];
     SDL_Rect subMenuOptionsRect[3];
     const char* subMenuOptions[3] = {"1 Player", "2 Players", "Back"};
-
+    void showGameOverMessage();
+    void saveScore();
+    void loadScores();
+    void showRanking();
+    void updateRankingDisplay();
     void showSubMenu();
     void updateSubMenuDisplay();
     void loadMusic();
