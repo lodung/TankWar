@@ -69,33 +69,57 @@ Game::Game() {
     Mix_VolumeMusic(40);
     selectedOption = 0;
     selectedSubMenuOption = 0;
-    level = 35;
-    score = 0;
-    tocdo1 = 4; tocdo2 = 4;
-
-  //  int totalEnemiesToSpawn = 10;
-    enemiesSpawned = 0;
-    Uint32 lastSpawnTime = 0;
-    const SDL_Point SPAWN_POINT = {1 * TILE_SIZE, 1 * TILE_SIZE};
-
     menu = true;
-    isPause = 0;
+    isPause = false;
     dangcap = std::to_string(level);
     srand(time(0));
     generateWalls();
-    base = Base(7 * TILE_SIZE, 13 * TILE_SIZE, renderer);
-    player = PlayerTank(5 * TILE_SIZE, 13 * TILE_SIZE,renderer, "image/Tank.png",shootSound);
-    player2 = PlayerTank(9 * TILE_SIZE,  13* TILE_SIZE,renderer, "image/Player2.png",shootSound);
-    player.hp = 3;
-    player2.hp = 3;
-    spawnEnemies();
+   // base = Base(7 * TILE_SIZE, 13 * TILE_SIZE, renderer);
+   // player = PlayerTank(5 * TILE_SIZE, 13 * TILE_SIZE,renderer, "image/Tank.png",shootSound);
+   // player2 = PlayerTank(9 * TILE_SIZE,  13* TILE_SIZE,renderer, "image/Player2.png",shootSound);
+   // player.hp = 3;
+   // player2.hp = 3;
+   // spawnEnemies();
     updateMenuDisplay();
-    updateSubMenuDisplay();
+   // updateSubMenuDisplay();
+   // updateLevelDisplay();
+   // updateScoreDisplay();
+   // updateHpDisplay();
+   // loadScores();
+   // updateRankingDisplay();
+}
+void Game::resetGame() {
+    over = false;
+    menu = false;
+    subMenu = false;
+    isPause = false;
+    score = 0;
+    level = 1;
+    enemiesSpawned = 0;
+    lastSpawnTime = 0;
+
+    player = PlayerTank(5 * TILE_SIZE, 13 * TILE_SIZE, renderer, "image/Tank.png", shootSound);
+    player.hp = 3;
+    player2 = PlayerTank(9 * TILE_SIZE, 13 * TILE_SIZE, renderer, "image/Player2.png", shootSound);
+    player2.hp = 3;
+    base = Base(7 * TILE_SIZE, 13 * TILE_SIZE, renderer);
+    base.hp = 2;
+    base.active = true;
+    tocdo1 = 4;
+    tocdo2 = 4;
+    enemies.clear();
+    wallExplosions.clear();
+    walls.clear();
+    stones.clear();
+    bushs.clear();
+    waters.clear();
+    ices.clear();
+    dangcap = std::to_string(level);
+    generateWalls();
+    spawnEnemies();
     updateLevelDisplay();
     updateScoreDisplay();
     updateHpDisplay();
-    loadScores();
-    updateRankingDisplay();
 }
 
 void Game::generateWalls() {
@@ -164,7 +188,7 @@ void Game::handleEvents() {
             isPause = !isPause;
         }
         else if(event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_ESCAPE){
-            running = false;
+            isPause = !isPause;
         }
         else if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_1) {
             menu = 0;
@@ -466,12 +490,14 @@ void Game::showSubMenu() {
                     break;
                 case SDLK_RETURN: // Phím Enter
                     if (selectedSubMenuOption == 0) { // 1 Player
+                        resetGame();
                         gameMode = 1;
                         subMenu = false;
                         player2.active = false;
                         player2.rect = {0,0,0,0}; // Ẩn player 2 đi
                     }
                     else if (selectedSubMenuOption == 1) {
+                        resetGame();
                         gameMode = 2;
                         subMenu = false;
                     }
@@ -539,6 +565,7 @@ void Game::update() {
             if (wall.active && SDL_HasIntersection(&bullet.rect, &wall.rect)) {
                 wall.active = false;
                 bullet.active = false;
+                wallExplosions.emplace_back(renderer, wall.rect.x, wall.rect.y);
                 break;
             }
         }
@@ -548,6 +575,7 @@ void Game::update() {
             if (wall.active && SDL_HasIntersection(&bullet.rect, &wall.rect)) {
                 wall.active = false;
                 bullet.active = false;
+                wallExplosions.emplace_back(renderer, wall.rect.x, wall.rect.y);
                 break;
             }
         }
@@ -559,7 +587,7 @@ void Game::update() {
         for (auto& bullet2 : enemy.bullets){
             if (bullet.active && SDL_HasIntersection(&bullet.rect, &bullet2.rect)) {
             bullet.active = false;
-            bullet2.active =false;
+            bullet2.active = false;
             break;
 
             }
@@ -571,7 +599,7 @@ void Game::update() {
         for (auto& bullet2 : enemy.bullets){
             if (bullet.active && SDL_HasIntersection(&bullet.rect, &bullet2.rect)) {
             bullet.active = false;
-            bullet2.active =false;
+            bullet2.active = false;
             break;
             }
         }
@@ -693,18 +721,30 @@ void Game::update() {
     for (auto& enemy : enemies ){
         for (auto& bullet: enemy.bullets){
             if(SDL_HasIntersection(&bullet.rect, &base.rect)){
+                    base.hp--;
+                    bullet.active = false;
+                if(base.hp == 0){
                 base.active = false;
+                }
             }
         }
     }
     for (auto& bullet : player.bullets ){
             if(SDL_HasIntersection(&bullet.rect, &base.rect)){
+                base.hp--;
+                bullet.active = false;
+                if(base.hp == 0){
                 base.active = false;
+                }
             }
     }
     for (auto& bullet : player2.bullets ){
             if(SDL_HasIntersection(&bullet.rect, &base.rect)){
+                base.hp--;
+                bullet.active = false;
+                if(base.hp == 0){
                 base.active = false;
+                }
             }
     }
 
@@ -717,7 +757,14 @@ void Game::update() {
         ),
         enemies.end()
     );
-
+    wallExplosions.erase(
+        std::remove_if(
+            wallExplosions.begin(),
+            wallExplosions.end(),
+            [](const wallExplosion& explosion) { return explosion.isFinished(); }
+        ),
+        wallExplosions.end()
+    );
     //Kiểm tra điều kiện thắng
     if (enemiesSpawned >= 10 && enemies.empty()) {
         enemiesSpawned = 0;
@@ -745,6 +792,7 @@ void Game::update() {
         updateLevelDisplay();
         updateScoreDisplay();
         player.bullets.clear();
+        wallExplosions.clear();
         generateWalls();
         spawnEnemies();
         updateScoreDisplay();
@@ -789,7 +837,9 @@ void Game::render() {
     }
     for (auto& enemy : enemies) enemy.render(renderer);
     for (auto& bush : bushs) bush.render(renderer);
-
+    for (auto& explosion : wallExplosions) {
+        explosion.render(renderer);
+   }
     SDL_RenderCopy(renderer, levelTextTexture, NULL, &levelTextRect);
     SDL_RenderCopy(renderer, scoreTexture, NULL, &scoreRect);
     SDL_RenderCopy(renderer, hpTexture,NULL, &hpRect);
@@ -940,20 +990,7 @@ void Game::updateRankingDisplay() {
 }
 
 Game::~Game() {
-    Mix_FreeChunk(shootSound);
     Mix_FreeMusic(backGroundMusic);
-    TTF_CloseFont(font);
-    TTF_CloseFont(font2);
-    SDL_DestroyTexture(titleTexture);
-    for (int i = 0; i < 3; i++) {
-        SDL_DestroyTexture(optionsTexture[i]);
-        SDL_DestroyTexture(subMenuOptionsTexture[i]);
-    }
-    TTF_Quit();
-    SDL_DestroyTexture(levelTextTexture);
-    SDL_DestroyTexture(scoreTexture);
-    SDL_DestroyTexture(hpTexture);
-    if (hp2Texture) SDL_DestroyTexture(hp2Texture);
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
     SDL_Quit();

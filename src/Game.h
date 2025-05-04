@@ -11,6 +11,7 @@
 #include "PlayerTank.h"
 #include "EnemyTank.h"
 #include "Wall.h"
+#include "Explosion.h"
 #include "Constants.h"
 
 class Game {
@@ -54,6 +55,7 @@ public:
     int tocdo1,tocdo2;
     std::string dangcap;
     std::vector<int> highScores;
+    std::vector<wallExplosion> wallExplosions;
     int score;
     Game();
     ~Game();
@@ -79,6 +81,7 @@ public:
     SDL_Texture* subMenuOptionsTexture[3];
     SDL_Rect subMenuOptionsRect[3];
     const char* subMenuOptions[3] = {"1 Player", "2 Players", "Back"};
+    void resetGame();
     void showWinMessage();
     void showGameOverMessage();
     void saveScore();

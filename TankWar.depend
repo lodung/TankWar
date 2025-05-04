@@ -90,7 +90,7 @@
 	<SDL.h>
 	<SDL_image.h>
 
-1746285939 d:\tankwar\src\game.h
+1746345269 d:\tankwar\src\game.h
 	<SDL.h>
 	<SDL_image.h>
 	<vector>
@@ -101,9 +101,10 @@
 	"PlayerTank.h"
 	"EnemyTank.h"
 	"Wall.h"
+	"Explosion.h"
 	"Constants.h"
 
-1746286122 source:d:\tankwar\src\game.cpp
+1746347527 source:d:\tankwar\src\game.cpp
 	"Game.h"
 	<iostream>
 	<cstdlib>
@@ -112,7 +113,7 @@
 	<SDL_mixer.h>
 	<ctime>
 
-1746282973 d:\tankwar\src\explosion.h
+1746345774 d:\tankwar\src\explosion.h
 
 1746114096 source:d:\tankwar\src\explosion.cpp
 
