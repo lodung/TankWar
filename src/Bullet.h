@@ -9,6 +9,7 @@ public:
     SDL_Rect rect;
     bool active;
     double angle;
+    int bulletSpeed;
     void calculateAngle();
     Bullet() = default ;
     Bullet(int startX, int startY, int dirX, int dirY,SDL_Renderer* renderer);

@@ -36,10 +36,8 @@ PlayerTank::PlayerTank() {}
 void PlayerTank::move(int dx, int dy, const std::vector<Wall>& walls, const std::vector<Stone>& stones) {
     int newX = x + dx;
     int newY = y + dy;
-    //this->
-    dirX = dx;
-    //this->
-    dirY = dy;
+    this->dirX = dx;
+    this->dirY = dy;
     calculateAngle();
     SDL_Rect newRect = {newX, newY, TILE_SIZE, TILE_SIZE};
     for (const auto& wall : walls) {
@@ -49,7 +47,7 @@ void PlayerTank::move(int dx, int dy, const std::vector<Wall>& walls, const std:
     }
     for (const auto& stone : stones) {
         if (stone.active && SDL_HasIntersection(&newRect, &stone.rect)) {
-            return; //CHỐNG VA TƯỜNG
+            return; //CHỐNG VA TƯỜNG STONE
         }
     }
 

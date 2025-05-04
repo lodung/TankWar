@@ -11,9 +11,9 @@ public:
     int x, y;
     int dirX, dirY;
     double angle;
-    int moveDelay, shootDelay;
+    int moveDelay;
     Uint32 lastShootTime;
-    Uint32 shootCooldown = 3000;
+    Uint32 shootCooldown = 3500;
     SDL_Rect rect;
     SDL_Texture *enemyTexture;
     bool active;

@@ -71,22 +71,9 @@ Game::Game() {
     selectedSubMenuOption = 0;
     menu = true;
     isPause = false;
-    dangcap = std::to_string(level);
     srand(time(0));
     generateWalls();
-   // base = Base(7 * TILE_SIZE, 13 * TILE_SIZE, renderer);
-   // player = PlayerTank(5 * TILE_SIZE, 13 * TILE_SIZE,renderer, "image/Tank.png",shootSound);
-   // player2 = PlayerTank(9 * TILE_SIZE,  13* TILE_SIZE,renderer, "image/Player2.png",shootSound);
-   // player.hp = 3;
-   // player2.hp = 3;
-   // spawnEnemies();
     updateMenuDisplay();
-   // updateSubMenuDisplay();
-   // updateLevelDisplay();
-   // updateScoreDisplay();
-   // updateHpDisplay();
-   // loadScores();
-   // updateRankingDisplay();
 }
 void Game::resetGame() {
     over = false;
@@ -95,6 +82,7 @@ void Game::resetGame() {
     isPause = false;
     score = 0;
     level = 1;
+    demslg1 = 10;
     enemiesSpawned = 0;
     lastSpawnTime = 0;
 
@@ -103,7 +91,7 @@ void Game::resetGame() {
     player2 = PlayerTank(9 * TILE_SIZE, 13 * TILE_SIZE, renderer, "image/Player2.png", shootSound);
     player2.hp = 3;
     base = Base(7 * TILE_SIZE, 13 * TILE_SIZE, renderer);
-    base.hp = 2;
+    base.hp = 1;
     base.active = true;
     tocdo1 = 4;
     tocdo2 = 4;
@@ -166,7 +154,7 @@ void Game::generateWalls() {
 
 }
 
-void Game::spawnEnemies() {
+/*void Game::spawnEnemies() {
     if (enemies.size() < 3 && enemiesSpawned < 10 && SDL_GetTicks() - lastSpawnTime >= 3000)
     {
         enemies.push_back(EnemyTank(SPAWN_POINT.x, SPAWN_POINT.y, renderer));
@@ -174,8 +162,23 @@ void Game::spawnEnemies() {
         lastSpawnTime = SDL_GetTicks();
         std::cout << "Spawned enemy at (" << SPAWN_POINT.x << ", " << SPAWN_POINT.y << ")\n";
     }
-}
+}*/
+void Game::spawnEnemies() {
+    if (enemies.size() < 3 && enemiesSpawned < 10 && SDL_GetTicks() - lastSpawnTime >= 3000)
+    {
+        int spawnSide = rand() % 2; // 0: Góc trái, 1: Góc phải
 
+        SDL_Point spawnPoint;
+        if (spawnSide == 0) {
+            spawnPoint = {1 * TILE_SIZE, 1 * TILE_SIZE};
+        } else {
+            spawnPoint = {13 * TILE_SIZE, 1 * TILE_SIZE};
+        }
+        enemies.push_back(EnemyTank(spawnPoint.x, spawnPoint.y, renderer));
+        enemiesSpawned++;
+        lastSpawnTime = SDL_GetTicks();
+    }
+}
 
 void Game::handleEvents() {
     SDL_Event event;
@@ -190,11 +193,8 @@ void Game::handleEvents() {
         else if(event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_ESCAPE){
             isPause = !isPause;
         }
-        else if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_1) {
-            menu = 0;
-        }
-        else if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_2 ){
-            menu = 0;
+        else if(event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_q){
+            over = true;
         }
     }
 
@@ -267,7 +267,17 @@ void Game::updateHpDisplay(){
     hp2Rect = {SCREEN_WIDTH - 200, 150, hp2Surface->w, hp2Surface->h};
     SDL_FreeSurface(hp2Surface);
     }
-
+    std::string strBaseHp = "Base HP: " + std::to_string(base.hp);
+    SDL_Surface* baseSurface = TTF_RenderText_Solid(font, strBaseHp.c_str(), textColor);
+    baseHpTexture = SDL_CreateTextureFromSurface(renderer, baseSurface);
+    baseHpRect = {SCREEN_WIDTH - 200, 190, baseSurface->w, baseSurface->h};
+    SDL_FreeSurface(baseSurface);
+    SDL_Color text2Color = {255, 50, 50};
+    std::string strEnemy = "Enemies: " + std::to_string(demslg1);
+    SDL_Surface* enemySurface = TTF_RenderText_Solid(font, strEnemy.c_str(),text2Color);
+    enemySpawmTexture = SDL_CreateTextureFromSurface(renderer, enemySurface);
+    enemySpawnRect = {SCREEN_WIDTH - 200, 230, enemySurface->w, enemySurface->h};
+    SDL_FreeSurface(enemySurface);
 }
 void Game::showLevelUpMessage() {
     SDL_Color textColor = {255, 255, 0}; // Màu vàng
@@ -665,6 +675,8 @@ void Game::update() {
             if (enemy.active && SDL_HasIntersection(&bullet.rect, &enemy.rect)) {
                 enemy.active = false;
                 bullet.active = false;
+                demslg1--;
+                Explosions.emplace_back(renderer, enemy.rect.x, enemy.rect.y);
                 score +=100;
             }
         }
@@ -674,6 +686,8 @@ void Game::update() {
             if (enemy.active && SDL_HasIntersection(&bullet.rect, &enemy.rect)) {
                 enemy.active = false;
                 bullet.active = false;
+                demslg1--;
+                Explosions.emplace_back(renderer, enemy.rect.x, enemy.rect.y);
                 score +=100;
             }
         }
@@ -697,14 +711,18 @@ void Game::update() {
                 player.hp--;
                 std::cout<<"player 1 bi ban hp con lai: "<<player.hp<<endl;
                 bullet.active = false;
-                if(player.hp <= 0) {player.active = false;
+                if(player.hp <= 0) {
+                Explosions.emplace_back(renderer, player.rect.x, player.rect.y);
+                player.active = false;
                 player.rect = {0,0,0,0};
                 }
             }else if(SDL_HasIntersection(&bullet.rect, &player2.rect)){
                 player2.hp--;
                 std::cout<<"player 1 bi ban hp con lai: "<<player2.hp<<endl;
                 bullet.active = false;
-                if(player2.hp <= 0) {player2.active = false;
+                if(player2.hp <= 0) {
+                Explosions.emplace_back(renderer, player2.rect.x, player2.rect.y);
+                player2.active = false;
                 player2.rect = {0,0,0,0};
                 }
             }
@@ -713,6 +731,12 @@ void Game::update() {
         if (gameMode == 1 && player.active == false){
             over = true;
         }else if (gameMode == 2 && player.active == false && player2.active == false){
+            over = true;
+        }
+        else if (base.active == false){
+            Explosions.emplace_back(renderer, base.rect.x, base.rect.y);
+        //Explosions.emplace_back(renderer, player.rect.x, player.rect.y);
+       // if(gameMode == 2) Explosions.emplace_back(renderer, player2.rect.x, player2.rect.y);
             over = true;
         }
     }
@@ -735,6 +759,7 @@ void Game::update() {
                 bullet.active = false;
                 if(base.hp == 0){
                 base.active = false;
+              //  Explosions.emplace_back(renderer, base.rect.x, base.rect.y);
                 }
             }
     }
@@ -765,6 +790,15 @@ void Game::update() {
         ),
         wallExplosions.end()
     );
+    Explosions.erase(
+    std::remove_if(
+        Explosions.begin(),
+        Explosions.end(),
+        [](const Explosion& explosion) { return explosion.isFinished(); }
+        ),
+    Explosions.end()
+    );
+
     //Kiểm tra điều kiện thắng
     if (enemiesSpawned >= 10 && enemies.empty()) {
         enemiesSpawned = 0;
@@ -789,6 +823,7 @@ void Game::update() {
             player2.hp = 1;
             if(oldHp2 > 0) player2.hp = oldHp2;
         }
+        demslg1 = 10;
         updateLevelDisplay();
         updateScoreDisplay();
         player.bullets.clear();
@@ -805,9 +840,25 @@ void Game::render() {
         //Hiển thị thông báo "PAUSED"
         SDL_Surface* textSurface = TTF_RenderText_Solid(font, "PAUSED", {255, 255, 0});
         SDL_Texture* textTexture = SDL_CreateTextureFromSurface(renderer, textSurface);
-        SDL_Rect textRect = {SCREEN_WIDTH/2 - 140 , SCREEN_HEIGHT/2 - 80, 200, 100};
+        SDL_Rect textRect = {SCREEN_WIDTH/2 - 200 , SCREEN_HEIGHT/2 - 80, 200, 100};
         SDL_RenderCopy(renderer, textTexture, NULL, &textRect);
+        SDL_Color textColor = {57, 255, 20};
+        // Dòng 1
+        SDL_Surface* line1Surface = TTF_RenderUTF8_Solid(font, "Ấn ESC hoặc Z để tiếp tục", textColor);
+        SDL_Texture* line1Texture = SDL_CreateTextureFromSurface(renderer, line1Surface);
+        SDL_Rect line1Rect = {SCREEN_WIDTH / 2 - 290, SCREEN_HEIGHT / 2 + 20, line1Surface->w, line1Surface->h};
+        SDL_RenderCopy(renderer, line1Texture, NULL, &line1Rect);
+        // Dòng 2
+        SDL_Surface* line2Surface = TTF_RenderUTF8_Solid(font, "Ấn Q để lưu điểm và thoát về menu", textColor);
+        SDL_Texture* line2Texture = SDL_CreateTextureFromSurface(renderer, line2Surface);
+        SDL_Rect line2Rect = {SCREEN_WIDTH / 2 - 320, SCREEN_HEIGHT / 2 + 60, line2Surface->w, line2Surface->h};
+        SDL_RenderCopy(renderer, line2Texture, NULL, &line2Rect);
         SDL_RenderPresent(renderer);
+
+        SDL_FreeSurface(line1Surface);
+        SDL_DestroyTexture(line1Texture);
+        SDL_FreeSurface(line2Surface);
+        SDL_DestroyTexture(line2Texture);
         return;
     }
 
@@ -839,11 +890,16 @@ void Game::render() {
     for (auto& bush : bushs) bush.render(renderer);
     for (auto& explosion : wallExplosions) {
         explosion.render(renderer);
-   }
+    }
+    for (auto& tankex : Explosions){
+        tankex.render(renderer);
+    }
     SDL_RenderCopy(renderer, levelTextTexture, NULL, &levelTextRect);
     SDL_RenderCopy(renderer, scoreTexture, NULL, &scoreRect);
     SDL_RenderCopy(renderer, hpTexture,NULL, &hpRect);
     if (gameMode == 2 && hp2Texture) SDL_RenderCopy(renderer, hp2Texture, NULL, &hp2Rect);
+    SDL_RenderCopy(renderer, baseHpTexture, NULL, &baseHpRect);
+    SDL_RenderCopy(renderer, enemySpawmTexture, NULL, &enemySpawnRect);
     SDL_RenderPresent(renderer);
 }
 
@@ -860,10 +916,11 @@ void Game::run() {
             showRanking();
         }
         else if (over) {
+                SDL_Delay(1000);
                 showGameOverMessage();
                 over = false;
                 saveScore(); // Lưu điểm
-                SDL_Delay(100); // Đợi một chút để hiển thị thông điệp kết thúc (nếu cần)
+                SDL_Delay(200); // Đợi một chút để hiển thị thông điệp kết thúc (nếu cần)
                 menu = true; // Thoát game
         }
         else {
