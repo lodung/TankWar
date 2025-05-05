@@ -36,6 +36,9 @@ public:
     SDL_Rect scoreRect;
     SDL_Rect levelTextRect;
     Mix_Chunk* shootSound;
+    Mix_Chunk* levelUpSound;
+    Mix_Chunk* winSound;
+    Mix_Chunk* gameOverSound;
     TTF_Font* font;
     TTF_Font* font2;
     TTF_Font* fontbrick;

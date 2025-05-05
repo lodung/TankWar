@@ -66,9 +66,22 @@ Game::Game() {
         std::cerr << "Failed to load shoot sound! Error: " << Mix_GetError() << std::endl;
         running = false;
     }
-    Mix_VolumeMusic(40);
-    selectedOption = 0;
-    selectedSubMenuOption = 0;
+    gameOverSound = Mix_LoadWAV("sound/GameOver.mp3");
+    if (!gameOverSound) {
+        std::cerr << "Failed to load gameover sound! Error: " << Mix_GetError() << std::endl;
+        running = false;
+    }
+    levelUpSound = Mix_LoadWAV("sound/levelup.mp3");
+    if (!gameOverSound) {
+        std::cerr << "Failed to load levelup sound! Error: " << Mix_GetError() << std::endl;
+        running = false;
+    }
+    winSound = Mix_LoadWAV("sound/win.mp3");
+    if (!winSound) {
+        std::cerr << "Failed to load levelup sound! Error: " << Mix_GetError() << std::endl;
+        running = false;
+    }
+    Mix_VolumeMusic(60);
     menu = true;
     isPause = false;
     srand(time(0));
@@ -118,7 +131,7 @@ void Game::generateWalls() {
     stones.clear();
     std::vector <std::vector <char>> Map(28,std::vector<char>(27,'.'));
     std::string timkiem = "map/" + dangcap + ".txt";
-    std::cout<<timkiem;
+    //std::cout<<timkiem;
     std::ifstream file(timkiem);
     for(int i= 1; i<=27; i++)
     {
@@ -154,15 +167,6 @@ void Game::generateWalls() {
 
 }
 
-/*void Game::spawnEnemies() {
-    if (enemies.size() < 3 && enemiesSpawned < 10 && SDL_GetTicks() - lastSpawnTime >= 3000)
-    {
-        enemies.push_back(EnemyTank(SPAWN_POINT.x, SPAWN_POINT.y, renderer));
-        enemiesSpawned++;
-        lastSpawnTime = SDL_GetTicks();
-        std::cout << "Spawned enemy at (" << SPAWN_POINT.x << ", " << SPAWN_POINT.y << ")\n";
-    }
-}*/
 void Game::spawnEnemies() {
     if (enemies.size() < 3 && enemiesSpawned < 10 && SDL_GetTicks() - lastSpawnTime >= 3000)
     {
@@ -280,6 +284,8 @@ void Game::updateHpDisplay(){
     SDL_FreeSurface(enemySurface);
 }
 void Game::showLevelUpMessage() {
+    Mix_PauseMusic();
+    Mix_PlayChannel(-1, levelUpSound, 0);
     SDL_Color textColor = {255, 255, 0}; // Màu vàng
     SDL_Surface* textSurface = TTF_RenderText_Solid(fontLevelUp, "LEVEL UP!", textColor);
     SDL_Texture* textTexture = SDL_CreateTextureFromSurface(renderer, textSurface);
@@ -298,8 +304,11 @@ void Game::showLevelUpMessage() {
     SDL_FreeSurface(textSurface);
     SDL_DestroyTexture(textTexture);
     SDL_Delay(1500);
+    Mix_ResumeMusic();
 }
 void Game::showGameOverMessage() {
+    Mix_PauseMusic();
+    Mix_PlayChannel(-1, gameOverSound, 0);
     SDL_Color gameOverColor = {255, 0, 0}; // Màu đỏ
     SDL_Surface* gameOverSurface = TTF_RenderText_Solid(fontLevelUp, "GAME OVER", gameOverColor);
     SDL_Texture* gameOverTexture = SDL_CreateTextureFromSurface(renderer, gameOverSurface);
@@ -312,12 +321,9 @@ void Game::showGameOverMessage() {
         gameOverSurface->h
     };
 
-    // Tạo thông báo "Lưu điểm và quay trở lại menu chính"
     SDL_Color infoColor = {255, 255, 255}; // Màu trắng
     SDL_Surface* infoSurface = TTF_RenderUTF8_Solid(font, "Lưu điểm và quay trở lại menu chính", infoColor);
     SDL_Texture* infoTexture = SDL_CreateTextureFromSurface(renderer, infoSurface);
-
-    // Vị trí hiển thị thông báo dưới cùng màn hình
     SDL_Rect infoRect = {SCREEN_WIDTH / 2 - infoSurface->w / 2, SCREEN_HEIGHT - infoSurface->h - 50,
         infoSurface->w,
         infoSurface->h
@@ -335,10 +341,13 @@ void Game::showGameOverMessage() {
     SDL_FreeSurface(infoSurface);
     SDL_DestroyTexture(infoTexture);
 
-    SDL_Delay(2000);
+    SDL_Delay(2900);
+    Mix_ResumeMusic();
 }
 void Game::showWinMessage() {
-    // Tạo thông báo "YOU WIN!"
+    Mix_PauseMusic();
+    Mix_VolumeChunk(winSound, 128);
+    Mix_PlayChannel(-1, winSound, 0);
     SDL_Color winColor = {0, 255, 0}; // Màu xanh lá
     SDL_Surface* winSurface = TTF_RenderUTF8_Solid(fontLevelUp, "YOU WIN!", winColor);
     SDL_Texture* winTexture = SDL_CreateTextureFromSurface(renderer, winSurface);
@@ -374,7 +383,8 @@ void Game::showWinMessage() {
     SDL_FreeSurface(infoSurface);
     SDL_DestroyTexture(infoTexture);
 
-    SDL_Delay(3000);
+    SDL_Delay(4500);
+    Mix_ResumeMusic();
 }
 void Game::updateMenuDisplay() {
     SDL_Color titleColor = {255, 0, 0};
@@ -442,7 +452,7 @@ void Game::showMenu() {
                     if (selectedOption == 0) {// Start Game
                         menu = false;
                         subMenu = true;
-                        selectedSubMenuOption = 3;
+                        selectedSubMenuOption = 0;
                         updateSubMenuDisplay();
                     }
                     else if (selectedOption == 1) {// Hiển thị màn hình xếp hạng
@@ -654,16 +664,16 @@ void Game::update() {
     }
 }
 
-    //Player di vào băng
+    //Player đi vào bùn
     for(auto& ice: ices){
         if(SDL_HasIntersection(&player.rect, &ice.rect)){
-            tocdo1 = 4;
+            tocdo1 = 2;
             break;
         }else tocdo1 = 4;
     }
     for(auto& ice: ices){
         if(SDL_HasIntersection(&player2.rect, &ice.rect)){
-            tocdo2 = 4;
+            tocdo2 = 2;
             break;
         }else tocdo2 = 4;
     }
@@ -709,7 +719,6 @@ void Game::update() {
         for (auto& bullet : enemy.bullets) {
             if (SDL_HasIntersection(&bullet.rect, &player.rect)) {
                 player.hp--;
-                std::cout<<"player 1 bi ban hp con lai: "<<player.hp<<endl;
                 bullet.active = false;
                 if(player.hp <= 0) {
                 Explosions.emplace_back(renderer, player.rect.x, player.rect.y);
@@ -718,7 +727,6 @@ void Game::update() {
                 }
             }else if(SDL_HasIntersection(&bullet.rect, &player2.rect)){
                 player2.hp--;
-                std::cout<<"player 1 bi ban hp con lai: "<<player2.hp<<endl;
                 bullet.active = false;
                 if(player2.hp <= 0) {
                 Explosions.emplace_back(renderer, player2.rect.x, player2.rect.y);
@@ -824,6 +832,8 @@ void Game::update() {
             if(oldHp2 > 0) player2.hp = oldHp2;
         }
         demslg1 = 10;
+        tocdo1 = 4;
+        tocdo2 = 4;
         updateLevelDisplay();
         updateScoreDisplay();
         player.bullets.clear();
@@ -920,7 +930,7 @@ void Game::run() {
                 showGameOverMessage();
                 over = false;
                 saveScore(); // Lưu điểm
-                SDL_Delay(200); // Đợi một chút để hiển thị thông điệp kết thúc (nếu cần)
+                SDL_Delay(200); // Đợi một chút để hiển thị thông điệp kết thúc
                 menu = true; // Thoát game
         }
         else {
@@ -934,7 +944,6 @@ void Game::run() {
     }
 }
 void Game::saveScore() {
-    // Mở file để ghi (append mode)
     std::ofstream file("scores.txt", std::ios::app);
     if (file.is_open()) {
         file << score << std::endl;
@@ -962,8 +971,6 @@ void Game::loadScores() {
         if (highScores.size() > 5) {
             highScores.resize(5);
         }
-
-        std::cout << "Loaded " << highScores.size() << " scores" << std::endl;
     } else {
         std::cout << "No scores file found, will create one when game ends" << std::endl;
     }
@@ -1018,7 +1025,6 @@ void Game::updateRankingDisplay() {
             rankingLines.push_back("#" + std::to_string(i + 1) + ": " + std::to_string(highScores[i]));
         }
     }
-    // Xóa texture cũ (nếu có)
     if (rankingTexture) {
         SDL_DestroyTexture(rankingTexture);
         rankingTexture = nullptr;
