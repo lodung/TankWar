@@ -525,6 +525,7 @@ void Game::showSubMenu() {
                         subMenu = false; // Thoát subMenu
                         menu = true;     // Quay lại menu chính
                         updateMenuDisplay(); // Cập nhật lại menu chính
+                    }
                     break;
                  case SDLK_ESCAPE: // Phím Escape cũng có thể dùng để Back
                     subMenu = false;
@@ -548,7 +549,6 @@ void Game::showSubMenu() {
          }
     }
 
-    // Vẽ hình chữ nhật hoặc mũi tên để chỉ lựa chọn hiện tại
     SDL_SetRenderDrawColor(renderer, 255, 255, 0, 255); // Màu vàng cho viền
      if (subMenuOptionsTexture[selectedSubMenuOption]) { // Chỉ vẽ nếu texture tương ứng hợp lệ
         SDL_Rect selectedRectHighlight = {
@@ -562,8 +562,6 @@ void Game::showSubMenu() {
 
     SDL_RenderPresent(renderer);
 }
-}
-
 
 void Game::update() {
     if (isPause) return;
@@ -574,7 +572,17 @@ void Game::update() {
     //Cử chỉ của enemy
     spawnEnemies();
     for (auto& enemy : enemies) {
-        enemy.moveTowardPlayer(player.x,player.y,walls,stones);
+        PlayerTank* target = nullptr;
+
+        if (player.active && (!player2.active ||
+            (abs(enemy.x - player.x) + abs(enemy.y - player.y) <= abs(enemy.x - player2.x) + abs(enemy.y - player2.y)))) {
+            target = &player;
+        } else if (player2.active) {
+            target = &player2;
+        }
+        if (target) {
+            enemy.moveTowardPlayer(target->x, target->y, walls, stones);
+        }
         enemy.updateBullets();
         enemy.shoot(renderer);
     }

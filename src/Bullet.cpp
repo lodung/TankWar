@@ -43,9 +43,6 @@ void Bullet::move() {
 
 void Bullet::render(SDL_Renderer* renderer) {
     if (active) {
-        //SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
-        //SDL_RenderFillRect(renderer, &rect);
-        //SDL_RenderCopy(renderer, bulletTexture, NULL, &rect);
         SDL_RenderCopyEx(renderer, bulletTexture, NULL, &rect, angle, nullptr, SDL_FLIP_NONE);
     }
 }

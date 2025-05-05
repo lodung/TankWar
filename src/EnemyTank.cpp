@@ -12,6 +12,7 @@ EnemyTank::EnemyTank(int startX, int startY, SDL_Renderer *renderer) {
     dirX = 0;
     dirY = 1;
     active = true;
+
 }
 
 void EnemyTank::calculateAngle() {
@@ -65,8 +66,7 @@ void EnemyTank::moveTowardPlayer(int playerX, int playerY, const vector<Wall>& w
         }
     } else {
         const int directions[4][2] = {{10, 0}, {-10, 0}, {0, 10}, {0, -10}};
-        int randomIndex = rand() % 4; // Chọn hướng ngẫu nhiên
-
+        int randomIndex = rand() % 4;
         if (canMove(x + directions[randomIndex][0], y + directions[randomIndex][1], walls, stones)) {
             applyMove(directions[randomIndex][0], directions[randomIndex][1]);
         }
