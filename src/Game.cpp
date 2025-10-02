@@ -711,11 +711,12 @@ void Game::update() {
         }
     }
 
-
+    //Va chạm đạn địch với tường.
     for (auto& enemy : enemies) {
         for (auto& bullet : enemy.bullets) {
             for (auto& wall : walls) {
                 if (wall.active && SDL_HasIntersection(&bullet.rect, &wall.rect)) {
+                    wallExplosions.emplace_back(renderer, wall.rect.x, wall.rect.y);
                     wall.active = false;
                     bullet.active = false;
                     break;
@@ -723,6 +724,8 @@ void Game::update() {
             }
         }
     }
+
+    //Va chạm đạn địch với người chơi
     for (auto& enemy : enemies) {
         for (auto& bullet : enemy.bullets) {
             if (SDL_HasIntersection(&bullet.rect, &player.rect)) {
