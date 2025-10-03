@@ -21,6 +21,7 @@ public:
     bool showingRanking = false;
     bool over = false;
     int demslg1;
+    SDL_Texture* menuBackgroundTexture = nullptr;
     SDL_Texture* levelTextTexture;
     SDL_Texture* scoreTexture;
     SDL_Texture* hpTexture;

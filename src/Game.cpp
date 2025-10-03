@@ -81,6 +81,10 @@ Game::Game() {
         std::cerr << "Failed to load levelup sound! Error: " << Mix_GetError() << std::endl;
         running = false;
     }
+    menuBackgroundTexture = IMG_LoadTexture(renderer, "image/background.png");
+    if (!menuBackgroundTexture) {
+    std::cerr << "Cannot load menu background image! " << IMG_GetError() << std::endl;
+    }
     Mix_VolumeMusic(60);
     menu = true;
     isPause = false;
@@ -592,17 +596,19 @@ void Game::showMenu() {
             }
         }
         handleMouseEvents(event);
-    }// Render menu
-    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
-    SDL_RenderClear(renderer);
+    }SDL_Rect bgRect = {0, 0, SCREEN_WIDTH, SCREEN_HEIGHT};
+    if (menuBackgroundTexture) {
+        SDL_RenderCopy(renderer, menuBackgroundTexture, NULL, &bgRect);
+    } else {
+        SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+        SDL_RenderClear(renderer);
+    }
+    // Vẽ title, options, viền...
     SDL_RenderCopy(renderer, titleTexture, NULL, &titleRect);
-
     for (int i = 0; i < 3; i++) {
         SDL_RenderCopy(renderer, optionsTexture[i], NULL, &optionsRect[i]);
     }
-
-    // Tạo hiệu ứng bằng hình chữ nhật xung quanh
-    SDL_SetRenderDrawColor(renderer, 255, 255, 0, 255); // Màu vàng cho viền
+    SDL_SetRenderDrawColor(renderer, 255, 255, 0, 255);
     SDL_Rect selectedRect = {
         optionsRect[selectedOption].x - 20,
         optionsRect[selectedOption].y - 5,
@@ -660,10 +666,13 @@ void Game::showSubMenu() {
     }
 
     // Render menu con
-    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255); // Màu đen cho nền
+    SDL_Rect bgRect = {0, 0, SCREEN_WIDTH, SCREEN_HEIGHT};
+    if (menuBackgroundTexture) {
+    SDL_RenderCopy(renderer, menuBackgroundTexture, NULL, &bgRect);
+    } else {
+    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
     SDL_RenderClear(renderer);
-
-    SDL_RenderCopy(renderer, titleTexture, NULL, &titleRect);
+    }
 
     // Vẽ các tùy chọn menu con
     for (int i = 0; i < 3; i++) {
