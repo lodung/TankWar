@@ -72,6 +72,10 @@ public:
    // int totalEnemiesToSpawn;
     int enemiesSpawned;
     Uint32 lastSpawnTime;
+    void handleMouseEvents(SDL_Event& event);
+    bool isMouseInRect(int mouseX, int mouseY, const SDL_Rect& rect);
+    void handleMenuSelection();
+    void handleSubMenuSelection();
     void updateLevelDisplay();
     void updateScoreDisplay();
     void updateHpDisplay();

@@ -190,6 +190,7 @@ void Game::handleEvents() {
         if (event.type == SDL_QUIT) {
             running = false;
         }
+        handleMouseEvents(event);
         // Xử lý sự kiện nhấn phím Z để tạm dừng (chỉ trigger khi nhấn, không giữ)
         if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_z) {
             isPause = !isPause;
@@ -238,6 +239,126 @@ void Game::handleEvents() {
             player2.shoot(renderer);
         }
         }
+    }
+}
+
+void Game::handleMouseEvents(SDL_Event& event) {
+    int mouseX, mouseY;
+
+    switch (event.type) {
+        case SDL_MOUSEMOTION:
+            SDL_GetMouseState(&mouseX, &mouseY);
+
+            // Xử lý hover trong menu chính
+            if (menu) {
+                int oldOption = selectedOption;
+                for (int i = 0; i < 3; i++) {
+                    if (isMouseInRect(mouseX, mouseY, optionsRect[i])) {
+                        selectedOption = i;
+                        break;
+                    }
+                }
+                if (oldOption != selectedOption) {
+                    updateMenuDisplay();
+                }
+            }
+            // Xử lý hover trong submenu
+            else if (subMenu) {
+                int oldOption = selectedSubMenuOption;
+                for (int i = 0; i < 3; i++) {
+                    if (isMouseInRect(mouseX, mouseY, subMenuOptionsRect[i])) {
+                        selectedSubMenuOption = i;
+                        break;
+                    }
+                }
+                if (oldOption != selectedSubMenuOption) {
+                    updateSubMenuDisplay();
+                }
+            }
+            break;
+
+        case SDL_MOUSEBUTTONDOWN:
+            if (event.button.button == SDL_BUTTON_LEFT) {
+                SDL_GetMouseState(&mouseX, &mouseY);
+
+                // Xử lý click trong menu chính
+                if (menu) {
+                    for (int i = 0; i < 3; i++) {
+                        if (isMouseInRect(mouseX, mouseY, optionsRect[i])) {
+                            selectedOption = i;
+                            handleMenuSelection();
+                            break;
+                        }
+                    }
+                }
+                // Xử lý click trong submenu
+                else if (subMenu) {
+                    for (int i = 0; i < 3; i++) {
+                        if (isMouseInRect(mouseX, mouseY, subMenuOptionsRect[i])) {
+                            selectedSubMenuOption = i;
+                            handleSubMenuSelection();
+                            break;
+                        }
+                    }
+                }
+                // Xử lý click trong ranking screen
+                else if (showingRanking) {
+                    showingRanking = false;
+                    menu = true;
+                    updateMenuDisplay();
+                }
+            }
+            break;
+    }
+}
+
+bool Game::isMouseInRect(int mouseX, int mouseY, const SDL_Rect& rect) {
+    return (mouseX >= rect.x &&
+            mouseX <= rect.x + rect.w &&
+            mouseY >= rect.y &&
+            mouseY <= rect.y + rect.h);
+}
+
+void Game::handleMenuSelection() {
+    switch (selectedOption) {
+        case 0: // Start Game
+            menu = false;
+            subMenu = true;
+            selectedSubMenuOption = 0;
+            updateSubMenuDisplay();
+            break;
+        case 1: // Ranking
+            showingRanking = true;
+            menu = false;
+            loadScores();
+            updateRankingDisplay();
+            break;
+        case 2: // Exit
+            running = false;
+            menu = false;
+            break;
+    }
+}
+
+void Game::handleSubMenuSelection() {
+    switch (selectedSubMenuOption) {
+        case 0: // 1 Player
+            resetGame();
+            gameMode = 1;
+            subMenu = false;
+            player2.active = false;
+            player2.rect = {0,0,0,0};
+            break;
+        case 1: // 2 Players
+            resetGame();
+            gameMode = 2;
+            subMenu = false;
+            break;
+        case 2: // Back
+            subMenu = false;
+            menu = true;
+            updateMenuDisplay();
+            break;
     }
 }
 
@@ -470,6 +591,7 @@ void Game::showMenu() {
 
             }
         }
+        handleMouseEvents(event);
     }// Render menu
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
     SDL_RenderClear(renderer);
@@ -534,6 +656,7 @@ void Game::showSubMenu() {
                     break;
             }
         }
+        handleMouseEvents(event);
     }
 
     // Render menu con
