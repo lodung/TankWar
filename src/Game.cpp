@@ -990,29 +990,33 @@ void Game::update() {
 
 void Game::render() {
     if (isPause == true && menu == false ) {
-        //Hiển thị thông báo "PAUSED"
-        SDL_Surface* textSurface = TTF_RenderText_Solid(font, "PAUSED", {255, 255, 0});
+        //Hiển thị thông báo Pause.
+        // Render màn hình đen
+        SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255); // Đen đặc
+        SDL_RenderClear(renderer);
+
+        // Render chữ "PAUSED"
+        SDL_Color textColor = {255, 255, 0}; // Vàng
+        SDL_Surface* textSurface = TTF_RenderText_Solid(font, "PAUSED", textColor);
         SDL_Texture* textTexture = SDL_CreateTextureFromSurface(renderer, textSurface);
-        SDL_Rect textRect = {SCREEN_WIDTH/2 - 200 , SCREEN_HEIGHT/2 - 80, 200, 100};
+        SDL_Rect textRect = {SCREEN_WIDTH/2 - textSurface->w/2, SCREEN_HEIGHT/2 - 80, textSurface->w, textSurface->h};
         SDL_RenderCopy(renderer, textTexture, NULL, &textRect);
-        SDL_Color textColor = {57, 255, 20};
-        // Dòng 1
-        SDL_Surface* line1Surface = TTF_RenderUTF8_Solid(font, "Ấn ESC hoặc Z để tiếp tục", textColor);
-        SDL_Texture* line1Texture = SDL_CreateTextureFromSurface(renderer, line1Surface);
-        SDL_Rect line1Rect = {SCREEN_WIDTH / 2 - 290, SCREEN_HEIGHT / 2 + 20, line1Surface->w, line1Surface->h};
-        SDL_RenderCopy(renderer, line1Texture, NULL, &line1Rect);
-        // Dòng 2
-        SDL_Surface* line2Surface = TTF_RenderUTF8_Solid(font, "Ấn Q để lưu điểm và thoát về menu", textColor);
-        SDL_Texture* line2Texture = SDL_CreateTextureFromSurface(renderer, line2Surface);
-        SDL_Rect line2Rect = {SCREEN_WIDTH / 2 - 320, SCREEN_HEIGHT / 2 + 60, line2Surface->w, line2Surface->h};
-        SDL_RenderCopy(renderer, line2Texture, NULL, &line2Rect);
+
+        // Render hướng dẫn
+        SDL_Color guideColor = {200, 255, 200};
+        SDL_Surface* guideSurface = TTF_RenderUTF8_Solid(font, "Ấn ESC hoặc Z để tiếp tục, Q để về menu", guideColor);
+        SDL_Texture* guideTexture = SDL_CreateTextureFromSurface(renderer, guideSurface);
+        SDL_Rect guideRect = {SCREEN_WIDTH/2 - guideSurface->w/2, SCREEN_HEIGHT/2 + 20, guideSurface->w, guideSurface->h};
+        SDL_RenderCopy(renderer, guideTexture, NULL, &guideRect);
+
         SDL_RenderPresent(renderer);
 
-        SDL_FreeSurface(line1Surface);
-        SDL_DestroyTexture(line1Texture);
-        SDL_FreeSurface(line2Surface);
-        SDL_DestroyTexture(line2Texture);
+        SDL_FreeSurface(textSurface);
+        SDL_DestroyTexture(textTexture);
+        SDL_FreeSurface(guideSurface);
+        SDL_DestroyTexture(guideTexture);
         return;
+
     }
 
     SDL_SetRenderDrawColor(renderer, 128, 128, 128, 255);
