@@ -98,7 +98,7 @@ void Game::resetGame() {
     subMenu = false;
     isPause = false;
     score = 0;
-    level = 1;
+    level = 35;
     demslg1 = 10;
     enemiesSpawned = 0;
     lastSpawnTime = 0;
@@ -211,19 +211,19 @@ void Game::handleEvents() {
     if(!isPause){
         if (player.active){
             if (keystates[SDL_SCANCODE_UP]) {
-                player.move(0, -tocdo1, walls, stones);  // Di chuyển lên
+                player.move(0, -tocdo1, walls, stones);
             }
             if (keystates[SDL_SCANCODE_DOWN]) {
-                player.move(0, tocdo1, walls, stones);   // Di chuyển xuống
+                player.move(0, tocdo1, walls, stones);
             }
             if (keystates[SDL_SCANCODE_LEFT]) {
-                player.move(-tocdo1, 0, walls, stones);  // Di chuyển sang trái
+                player.move(-tocdo1, 0, walls, stones);
             }
             if (keystates[SDL_SCANCODE_RIGHT]) {
-                player.move(tocdo1, 0, walls, stones);   // Di chuyển sang phải
+                player.move(tocdo1, 0, walls, stones);
             }
             if (keystates[SDL_SCANCODE_SPACE]) {
-                player.shoot(renderer);  // Bắn đạn
+                player.shoot(renderer);
             }
     }
     if(player2.active){
@@ -246,6 +246,7 @@ void Game::handleEvents() {
     }
 }
 
+ //Xử lý thao tác chuột.
 void Game::handleMouseEvents(SDL_Event& event) {
     int mouseX, mouseY;
 
@@ -315,7 +316,6 @@ void Game::handleMouseEvents(SDL_Event& event) {
             break;
     }
 }
-
 bool Game::isMouseInRect(int mouseX, int mouseY, const SDL_Rect& rect) {
     return (mouseX >= rect.x &&
             mouseX <= rect.x + rect.w &&
@@ -343,7 +343,6 @@ void Game::handleMenuSelection() {
             break;
     }
 }
-
 void Game::handleSubMenuSelection() {
     switch (selectedSubMenuOption) {
         case 0: // 1 Player
@@ -754,8 +753,8 @@ void Game::update() {
         }
      }
    }
-   for(auto& enemy: enemies){
-     for(auto& bullet : player2.bullets){
+   for (auto& enemy: enemies){
+     for (auto& bullet : player2.bullets){
         for (auto& bullet2 : enemy.bullets){
             if (bullet.active && SDL_HasIntersection(&bullet.rect, &bullet2.rect)) {
             bullet.active = false;
@@ -786,7 +785,7 @@ void Game::update() {
             }
         }
     }
-    for(auto& enemy : enemies){
+    for (auto& enemy : enemies){
     for (auto& bullet : enemy.bullets) {
         for (auto& stone : stones) {
             if (stone.active && SDL_HasIntersection(&bullet.rect, &stone.rect)) {
@@ -933,6 +932,8 @@ void Game::update() {
         ),
         enemies.end()
     );
+
+    //Xử lý vụ nổ
     wallExplosions.erase(
         std::remove_if(
             wallExplosions.begin(),
@@ -955,6 +956,7 @@ void Game::update() {
         enemiesSpawned = 0;
         lastSpawnTime = 0;
         level++;
+        // Nếu level trên 35 thì sẽ in level up
         if (level > 35) {
             showWinMessage();
             saveScore();
@@ -962,8 +964,11 @@ void Game::update() {
             menu = true;
             over = false;
         }
+
+        //Nếu level dưới bằng 35 sẽ win luôn
         if (level <=35 ) showLevelUpMessage();
         dangcap = std::to_string(level);
+
         int oldHp = player.hp;
         player = PlayerTank(5 * TILE_SIZE, 13 * TILE_SIZE, renderer, "image/Tank.png",shootSound);
         player.hp = 1;

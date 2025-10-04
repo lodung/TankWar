@@ -11,6 +11,7 @@ public:
     Wall(int startX, int startY, SDL_Renderer *renderer );
     void render(SDL_Renderer* renderer);
 };
+
 class Stone {
 public:
     int x,y;

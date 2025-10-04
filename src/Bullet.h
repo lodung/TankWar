@@ -10,11 +10,31 @@ public:
     bool active;
     double angle;
     int bulletSpeed;
-    void calculateAngle();
+
     Bullet() = default ;
     Bullet(int startX, int startY, int dirX, int dirY,SDL_Renderer* renderer);
+
+    void calculateAngle();
     void move();
     void render(SDL_Renderer* renderer);
+
+    SDL_Texture *bulletTexture = nullptr;
+};
+
+class BigBullet {
+public:
+    int x, y;
+    int dx, dy;
+    SDL_Rect rect;
+    bool active;
+    double angle;
+    int bigBulletSpeed;
+    BigBullet() = default;
+    BigBullet(int startX, int startY, int dirX, int dirY, SDL_Renderer* renderer);
+    void calculateAngle();
+    void move();
+    void render(SDL_Renderer* renderer);
+    SDL_Texture* bigBulletTexture = nullptr;
 };
 
 #endif // BULLET_H

@@ -18,6 +18,7 @@ public:
     bool active;
     SDL_Rect rect;
     std::vector<Bullet> bullets;
+    std::vector<BigBullet> bigBullets;
     SDL_Texture *tankTexture;
     Mix_Chunk* shootSound;
     void calculateAngle();
@@ -25,7 +26,9 @@ public:
     PlayerTank();
     void move(int dx, int dy, const std::vector<Wall>& walls, const std::vector<Stone>& stones);
     void shoot(SDL_Renderer* renderer);
+    void shootBigBullet(SDL_Renderer* renderer);
     void updateBullets();
+    void updateBigBullets();
     void render(SDL_Renderer* renderer);
 };
 
