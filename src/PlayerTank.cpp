@@ -92,7 +92,6 @@ void PlayerTank::render(SDL_Renderer* renderer) {
     if (tankTexture) {
         SDL_RenderCopyEx(renderer, tankTexture, NULL, &rect, angle, nullptr, SDL_FLIP_NONE);
     }
-    //SDL_RenderCopy(renderer, tankTexture, NULL, &rect);
     for (auto& bullet : bullets) {
         bullet.render(renderer);
         }

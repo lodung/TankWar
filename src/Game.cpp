@@ -83,7 +83,7 @@ Game::Game() {
     }
     menuBackgroundTexture = IMG_LoadTexture(renderer, "image/background.png");
     if (!menuBackgroundTexture) {
-    std::cerr << "Cannot load menu background image! " << IMG_GetError() << std::endl;
+        std::cerr << "Failed to load menu background image! " << IMG_GetError() << std::endl;
     }
     Mix_VolumeMusic(60);
     menu = true;
@@ -194,54 +194,30 @@ void Game::handleEvents() {
         if (event.type == SDL_QUIT) {
             running = false;
         }
+
         handleMouseEvents(event);
-        // Xử lý sự kiện nhấn phím Z để tạm dừng (chỉ trigger khi nhấn, không giữ)
-        if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_z) {
-            isPause = !isPause;
-        }
-        else if(event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_ESCAPE){
-            isPause = !isPause;
-        }
-        else if(event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_q){
-            over = true;
-        }
+
+        // PAUSE
+        if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_z) { isPause = !isPause; }
+        else if(event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_ESCAPE){ isPause = !isPause; }
+        else if(event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_q){ over = true; }
     }
 
     const Uint8* keystates = SDL_GetKeyboardState(nullptr); // Lấy trạng thái của tất cả các phím
     if(!isPause){
         if (player.active){
-            if (keystates[SDL_SCANCODE_UP]) {
-                player.move(0, -tocdo1, walls, stones);
-            }
-            if (keystates[SDL_SCANCODE_DOWN]) {
-                player.move(0, tocdo1, walls, stones);
-            }
-            if (keystates[SDL_SCANCODE_LEFT]) {
-                player.move(-tocdo1, 0, walls, stones);
-            }
-            if (keystates[SDL_SCANCODE_RIGHT]) {
-                player.move(tocdo1, 0, walls, stones);
-            }
-            if (keystates[SDL_SCANCODE_SPACE]) {
-                player.shoot(renderer);
-            }
-    }
-    if(player2.active){
-        if (keystates[SDL_SCANCODE_W]) {
-            player2.move(0, -tocdo2, walls, stones);
+            if (keystates[SDL_SCANCODE_UP]) { player.move(0, -tocdo1, walls, stones); }
+            if (keystates[SDL_SCANCODE_DOWN]) { player.move(0, tocdo1, walls, stones); }
+            if (keystates[SDL_SCANCODE_LEFT]) { player.move(-tocdo1, 0, walls, stones); }
+            if (keystates[SDL_SCANCODE_RIGHT]) { player.move(tocdo1, 0, walls, stones); }
+            if (keystates[SDL_SCANCODE_SPACE]) { player.shoot(renderer); }
         }
-        if (keystates[SDL_SCANCODE_S]) {
-            player2.move(0, tocdo2, walls, stones);
-        }
-        if (keystates[SDL_SCANCODE_A]) {
-            player2.move(-tocdo2, 0, walls, stones);
-        }
-        if (keystates[SDL_SCANCODE_D]) {
-            player2.move(tocdo2, 0, walls, stones);
-        }
-        if (keystates[SDL_SCANCODE_L]) {
-            player2.shoot(renderer);
-        }
+        if(player2.active){
+            if (keystates[SDL_SCANCODE_W]) { player2.move(0, -tocdo2, walls, stones); }
+            if (keystates[SDL_SCANCODE_S]) { player2.move(0, tocdo2, walls, stones); }
+            if (keystates[SDL_SCANCODE_A]) { player2.move(-tocdo2, 0, walls, stones); }
+            if (keystates[SDL_SCANCODE_D]) { player2.move(tocdo2, 0, walls, stones); }
+            if (keystates[SDL_SCANCODE_L]) { player2.shoot(renderer); }
         }
     }
 }
@@ -842,7 +818,7 @@ void Game::update() {
         }
     }
 
-    //Va chạm đạn địch với tường.
+    //Va chạm đạn địch với tường và người chơi
     for (auto& enemy : enemies) {
         for (auto& bullet : enemy.bullets) {
             for (auto& wall : walls) {
@@ -855,8 +831,6 @@ void Game::update() {
             }
         }
     }
-
-    //Va chạm đạn địch với người chơi
     for (auto& enemy : enemies) {
         for (auto& bullet : enemy.bullets) {
             if (SDL_HasIntersection(&bullet.rect, &player.rect)) {

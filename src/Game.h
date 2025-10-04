@@ -70,7 +70,6 @@ public:
     Game();
     ~Game();
     SDL_Point SPAWN_POINT = {1 * TILE_SIZE, 1 * TILE_SIZE};
-   // int totalEnemiesToSpawn;
     int enemiesSpawned;
     Uint32 lastSpawnTime;
     void handleMouseEvents(SDL_Event& event);

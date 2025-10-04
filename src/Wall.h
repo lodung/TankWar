@@ -21,6 +21,7 @@ public:
     Stone(int startX, int startY, SDL_Renderer *renderer );
     void render(SDL_Renderer* renderer);
 };
+
 class Bush{
 public:
     int x,y;
@@ -38,6 +39,7 @@ public:
     Ice(int startX,int startY, SDL_Renderer *renderer);
     void render(SDL_Renderer* renderer);
 };
+
 class Water{
 public:
     int x,y;
@@ -46,6 +48,7 @@ public:
     Water (int startX,int startY, SDL_Renderer *renderer);
     void render(SDL_Renderer* renderer);
 };
+
 class Base{
 public:
     int x,y;

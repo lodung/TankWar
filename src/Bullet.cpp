@@ -4,9 +4,9 @@
 #include <iostream>
 #include <SDL_image.h>
 
-/////////////////////////////////
-////// Bullet
-////////////////////////////////
+/////////////////////////
+////// Bullet //////////
+///////////////////////
 Bullet::Bullet(int startX, int startY, int dirX, int dirY, SDL_Renderer* renderer) {
     x = startX;
     y = startY;
@@ -50,9 +50,9 @@ void Bullet::render(SDL_Renderer* renderer) {
     }
 }
 
-//////////////////////////////////////////////
-//// BIG BULLET
-/////////////////////////////////////////////
+//////////////////////////////
+//// BIG BULLET /////////////
+/////////////////////////////
 BigBullet::BigBullet(int startX, int startY, int dirX, int dirY, SDL_Renderer* renderer) {
     x = startX;
     y = startY;
@@ -63,7 +63,7 @@ BigBullet::BigBullet(int startX, int startY, int dirX, int dirY, SDL_Renderer* r
         std::cerr << "Failed to load nuclear texture: " << IMG_GetError() << std::endl;
     }
     active = true;
-    rect = {x, y, 27, 27}; // To hơn đạn thường
+    rect = {x, y, 27, 27}; // Kích cỡ đạn
     bigBulletSpeed = 4;
     calculateAngle();
 }
