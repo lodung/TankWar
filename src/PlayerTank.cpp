@@ -6,7 +6,7 @@
 #include <SDL_image.h>
 #include <algorithm>
 Uint32 lastShootTime = 0;
-const Uint32 shootCooldown = 300;
+const Uint32 shootCooldown = 10;
 void PlayerTank::calculateAngle() {
     if (dirX > 0 ) {      // Phải
         angle = 90.0;

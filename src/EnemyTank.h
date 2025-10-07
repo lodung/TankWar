@@ -18,8 +18,6 @@ public:
     SDL_Texture *enemyTexture;
     bool active;
     vector<Bullet> bullets;
-    enum Direction { UP, DOWN, LEFT, RIGHT };
-    Direction dir;
     EnemyTank(int startX, int startY,SDL_Renderer *renderer);
     void moveTowardPlayer(int playerX, int playerY, const vector<Wall>& walls,const vector<Stone>& stones);
     bool canMove(int newX, int newY, const vector<Wall>& walls, const vector<Stone>& stones);
@@ -27,6 +25,21 @@ public:
     void calculateAngle();
     void shoot(SDL_Renderer* renderer);
     void updateBullets();
+    void render(SDL_Renderer* renderer);
+};
+
+class BossTank {
+public:
+    int x, y;
+    int hp;
+    SDL_Rect rect;
+    SDL_Texture* bossTexture;
+    bool active;
+    std::vector<Bullet> bullets;
+    Uint32 lastShootTime;
+    Uint32 shootCooldown;
+    BossTank(int startX, int startY, SDL_Renderer* renderer);
+    BossTank();
     void render(SDL_Renderer* renderer);
 };
 #endif // ENEMYTANK_H

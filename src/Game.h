@@ -67,6 +67,8 @@ public:
     std::vector<wallExplosion> wallExplosions;
     std::vector<Explosion> Explosions;
     int score;
+    BossTank boss;
+    bool bossActive = false;
     Game();
     ~Game();
     SDL_Point SPAWN_POINT = {1 * TILE_SIZE, 1 * TILE_SIZE};

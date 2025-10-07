@@ -102,7 +102,8 @@ void Game::resetGame() {
     demslg1 = 10;
     enemiesSpawned = 0;
     lastSpawnTime = 0;
-
+    bossActive = false;
+    boss.active = true;
     player = PlayerTank(5 * TILE_SIZE, 13 * TILE_SIZE, renderer, "image/Tank.png", shootSound);
     player.hp = 3;
     player2 = PlayerTank(9 * TILE_SIZE, 13 * TILE_SIZE, renderer, "image/Player2.png", shootSound);
@@ -121,7 +122,15 @@ void Game::resetGame() {
     ices.clear();
     dangcap = std::to_string(level);
     generateWalls();
+    if (level == 36) {
+        bossActive = true;
+        boss = BossTank(
+            SCREEN_WIDTH / 2 - TILE_SIZE*5,
+            SCREEN_HEIGHT / 2 - TILE_SIZE*3,
+            renderer
+        ); } else {
     spawnEnemies();
+    }
     updateLevelDisplay();
     updateScoreDisplay();
     updateHpDisplay();
@@ -176,6 +185,7 @@ void Game::generateWalls() {
 }
 
 void Game::spawnEnemies() {
+    if (level == 36) return;
     if (enemies.size() < 3 && enemiesSpawned < 10 && SDL_GetTicks() - lastSpawnTime >= 3000)
     {
         int spawnSide = rand() % 2; // 0: Góc trái, 1: Góc phải
@@ -750,6 +760,33 @@ void Game::update() {
      }
    }
 
+   // Prayer bắn vào tổng tài
+   if (level == 36 && bossActive && boss.active) {
+    for (auto& bullet : player.bullets) {
+        if (SDL_HasIntersection(&bullet.rect, &boss.rect) && bullet.active) {
+            bullet.active = false;
+            boss.hp--;
+            if (boss.hp <= 0) {
+                boss.active = false;
+                score += 1000; // Thưởng điểm khi giết boss
+                Explosions.emplace_back(renderer, boss.rect.x, boss.rect.y);
+            }
+        }
+    }
+    // Nếu có player2
+    for (auto& bullet : player2.bullets) {
+        if (SDL_HasIntersection(&bullet.rect, &boss.rect) && bullet.active) {
+            bullet.active = false;
+            boss.hp--;
+            if (boss.hp <= 0) {
+                boss.active = false;
+                score += 1000;
+                    Explosions.emplace_back(renderer, boss.rect.x, boss.rect.y);
+                }
+            }
+        }
+    }
+
 
    //Va chạm với đá
     for (auto& bullet : player.bullets) {
@@ -868,8 +905,6 @@ void Game::update() {
         }
         else if (base.active == false){
             Explosions.emplace_back(renderer, base.rect.x, base.rect.y);
-        //Explosions.emplace_back(renderer, player.rect.x, player.rect.y);
-       // if(gameMode == 2) Explosions.emplace_back(renderer, player2.rect.x, player2.rect.y);
             over = true;
         }
     }
@@ -933,6 +968,15 @@ void Game::update() {
         ),
     Explosions.end()
     );
+    if (level == 36 && bossActive && !boss.active) {
+        showWinMessage();
+        saveScore();
+        SDL_Delay(1500);
+        menu = true;
+        over = false;
+        bossActive = false;
+        return;
+    }
 
     //Kiểm tra điều kiện thắng
     if (enemiesSpawned >= 10 && enemies.empty()) {
@@ -940,13 +984,36 @@ void Game::update() {
         lastSpawnTime = 0;
         level++;
         // Nếu level trên 36 thì sẽ win luôn
-        if (level > 36) {
-            showWinMessage();
-            saveScore();
-            SDL_Delay(1500);
-            menu = true;
-            over = false;
+
+
+        if (level == 36 && !bossActive) {
+        bossActive = true;
+        boss = BossTank(
+            SCREEN_WIDTH / 2 - TILE_SIZE, // Vị trí giữa map, chỉnh nếu map khác
+            SCREEN_HEIGHT / 2 - TILE_SIZE,
+            renderer
+        );
+        // Cập nhật lại hiển thị level
+        updateLevelDisplay();
+        // Có thể reset player vị trí hoặc hp nếu muốn
+        int oldHp = player.hp;
+        player = PlayerTank(5 * TILE_SIZE, 13 * TILE_SIZE, renderer, "image/Tank.png",shootSound);
+        player.hp = (oldHp > 0) ? oldHp : 1;
+        if (gameMode == 2) {
+            int oldHp2 = player2.hp;
+            player2 = PlayerTank(9 * TILE_SIZE, 13 * TILE_SIZE, renderer, "image/Player2.png",shootSound);
+            player2.hp = (oldHp2 > 0) ? oldHp2 : 1;
         }
+        demslg1 = 0; // Không còn enemy thường nữa
+        tocdo1 = 4;
+        tocdo2 = 4;
+        player.bullets.clear();
+        wallExplosions.clear();
+        generateWalls();
+        // Không spawnEnemies nữa!
+        updateScoreDisplay();
+        return;
+    }
 
         //Nếu level dưới bằng 36 sẽ levelup
         if (level <=35 ) showLevelUpMessage();
@@ -1013,6 +1080,10 @@ void Game::render() {
         SDL_Rect tile = { j * TILE_SIZE, i * TILE_SIZE, TILE_SIZE, TILE_SIZE };
         SDL_RenderFillRect(renderer, &tile);
         }
+    }
+    // Thêm hàm render boss ở lv boss
+    if (level == 36 && bossActive && boss.active) {
+    boss.render(renderer);
     }
 
     for (auto& water: waters) water.render(renderer);

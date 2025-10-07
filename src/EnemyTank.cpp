@@ -96,10 +96,6 @@ void EnemyTank::applyMove(int dx, int dy) {
     dirX = dx;
     dirY = dy;
 
-    if (dx < 0) dir = RIGHT;
-    else if (dx > 0) dir = LEFT;
-    else if (dy < 0) dir = DOWN;
-    else if (dy > 0) dir = UP;
     calculateAngle();
 }
 
@@ -129,5 +125,35 @@ void EnemyTank::updateBullets() {
 
 void EnemyTank::render(SDL_Renderer* renderer) {
     SDL_RenderCopyEx(renderer, enemyTexture, NULL, &rect, angle, nullptr, SDL_FLIP_NONE);
+    for (auto& bullet : bullets) bullet.render(renderer);
+}
+
+
+////////////////////////
+////////BOSS //////////
+//////////////////////
+
+BossTank::BossTank() : x(0), y(0), hp(0), bossTexture(nullptr), active(false), lastShootTime(0), shootCooldown(1000) {
+    rect = {0, 0, 0, 0};
+}
+
+BossTank::BossTank(int startX, int startY, SDL_Renderer* renderer) {
+    x = startX;
+    y = startY;
+    hp = 20;
+    active = true;
+    lastShootTime = 0;
+    shootCooldown = 1000;
+    bossTexture = IMG_LoadTexture(renderer, "image/boss.png");
+    rect = {x, y, TILE_SIZE*5, TILE_SIZE*5};
+}
+
+
+
+void BossTank::render(SDL_Renderer* renderer) {
+    if (active)
+        SDL_RenderCopy(renderer, bossTexture, NULL, &rect);
+    // Hiển thị hp:
+    // Có thể vẽ text hoặc bar hp ở đây nếu muốn.
     for (auto& bullet : bullets) bullet.render(renderer);
 }
