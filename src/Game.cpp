@@ -98,7 +98,7 @@ void Game::resetGame() {
     subMenu = false;
     isPause = false;
     score = 0;
-    level = 35;
+    level = 36;
     demslg1 = 10;
     enemiesSpawned = 0;
     lastSpawnTime = 0;
@@ -134,17 +134,21 @@ void Game::generateWalls() {
     ices.clear();
     stones.clear();
     std::vector <std::vector <char>> Map(28,std::vector<char>(27,'.'));
-    std::string timkiem = "map/" + dangcap + ".txt";
-    //std::cout<<timkiem;
+    std::string timkiem;
+    if (level == 36) {
+        timkiem = "map/bossLevel.txt";
+    } else {
+        timkiem = "map/" + dangcap + ".txt";
+    }
     std::ifstream file(timkiem);
     for(int i= 1; i<=27; i++)
     {
-        for (int j = 1; j<=26; j++){
+        for (int j = 1; j<=26; j++) {
             file >> Map[i][j];
         }
     }
     file.close();
-    for (int i = 1; i<=27; i++){
+    for (int i = 1; i<=27; i++) {
         for(int j = 0; j<=26 ;j++) {
             if(Map[i][j] == '#'){
                 Wall w = Wall((j+1)*TILE_SIZEm,(i+1)*TILE_SIZEm,renderer);
@@ -342,7 +346,12 @@ void Game::handleSubMenuSelection() {
 }
 
 void Game::updateLevelDisplay() {
-    std::string strCapDo = "LEVEL: " + std::to_string(level);
+    std::string strCapDo;
+    if (level == 36) {
+        strCapDo = "LEVEL: BOSS";
+    } else {
+        strCapDo = "LEVEL: " + std::to_string(level);
+    }
     SDL_Color textColor = {255, 255, 0}; // Màu vàng
     SDL_Surface* textSurface = TTF_RenderText_Solid(font, strCapDo.c_str(), textColor);
     levelTextTexture = SDL_CreateTextureFromSurface(renderer, textSurface);
@@ -930,8 +939,8 @@ void Game::update() {
         enemiesSpawned = 0;
         lastSpawnTime = 0;
         level++;
-        // Nếu level trên 35 thì sẽ in level up
-        if (level > 35) {
+        // Nếu level trên 36 thì sẽ win luôn
+        if (level > 36) {
             showWinMessage();
             saveScore();
             SDL_Delay(1500);
@@ -939,19 +948,17 @@ void Game::update() {
             over = false;
         }
 
-        //Nếu level dưới bằng 35 sẽ win luôn
+        //Nếu level dưới bằng 36 sẽ levelup
         if (level <=35 ) showLevelUpMessage();
         dangcap = std::to_string(level);
 
         int oldHp = player.hp;
         player = PlayerTank(5 * TILE_SIZE, 13 * TILE_SIZE, renderer, "image/Tank.png",shootSound);
-        player.hp = 1;
-        if(oldHp > 0) player.hp = oldHp;
+        player.hp = (oldHp > 0) ? oldHp : 1;
         if (gameMode == 2){
             int oldHp2 = player2.hp;
             player2 = PlayerTank(9 * TILE_SIZE, 13 * TILE_SIZE, renderer, "image/Player2.png",shootSound);
-            player2.hp = 1;
-            if(oldHp2 > 0) player2.hp = oldHp2;
+            player2.hp = (oldHp2 > 0) ? oldHp2 : 1;
         }
         demslg1 = 10;
         tocdo1 = 4;

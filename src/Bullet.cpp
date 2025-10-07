@@ -14,7 +14,7 @@ Bullet::Bullet(int startX, int startY, int dirX, int dirY, SDL_Renderer* rendere
     dy = dirY;
     bulletTexture = IMG_LoadTexture(renderer,"image/bullet.jpg");
     active = true;
-    rect = {x, y, 27, 27};
+    rect = {x, y, 9, 9};
     calculateAngle();
 }
 void Bullet::calculateAngle() {
