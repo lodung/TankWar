@@ -55,27 +55,27 @@
 1759600419 d:\tankwar\src\bullet.h
 	<SDL.h>
 
-1759849954 d:\tankwar\src\enemytank.h
+1759999941 d:\tankwar\src\enemytank.h
 	<SDL.h>
 	<vector>
 	"Bullet.h"
 	"Wall.h"
 	"Constants.h"
 
-1759818745 source:d:\tankwar\src\bullet.cpp
+1759999885 source:d:\tankwar\src\bullet.cpp
 	"bullet.h"
 	"constants.h"
 	<SDL.h>
 	<iostream>
 	<SDL_image.h>
 
-1759849937 source:d:\tankwar\src\enemytank.cpp
+1760001005 source:d:\tankwar\src\enemytank.cpp
 	"EnemyTank.h"
 	<algorithm>
 	<iostream>
 	<SDL_image.h>
 
-1759849392 source:d:\tankwar\src\playertank.cpp
+1760001409 source:d:\tankwar\src\playertank.cpp
 	"playertank.h"
 	"constants.h"
 	<iostream>
@@ -90,7 +90,7 @@
 	<SDL.h>
 	<SDL_image.h>
 
-1759846817 d:\tankwar\src\game.h
+1760083788 d:\tankwar\src\game.h
 	<SDL.h>
 	<SDL_image.h>
 	<vector>
@@ -104,7 +104,7 @@
 	"Explosion.h"
 	"Constants.h"
 
-1759849861 source:d:\tankwar\src\game.cpp
+1760002658 source:d:\tankwar\src\game.cpp
 	"Game.h"
 	<iostream>
 	<cstdlib>
@@ -117,4 +117,91 @@
 
 1758422698 source:d:\tankwar\src\explosion.cpp
 	"Explosion.h"
+
+1758422698 source:c:\tank\tankwar\main.cpp
+	<iostream>
+	<SDL.h>
+	<SDL_image.h>
+	<vector>
+	<string>
+	<algorithm>
+	"src/Game.h"
+
+1760083788 c:\tank\tankwar\src\game.h
+	<SDL.h>
+	<SDL_image.h>
+	<vector>
+	<fstream>
+	<algorithm>
+	<SDL_ttf.h>
+	<SDL_mixer.h>
+	"PlayerTank.h"
+	"EnemyTank.h"
+	"Wall.h"
+	"Explosion.h"
+	"Constants.h"
+
+1759600321 c:\tank\tankwar\src\playertank.h
+	<SDL.h>
+	<SDL_mixer.h>
+	<vector>
+	<string>
+	"wall.h"
+	"Bullet.h"
+	"constants.h"
+	"algorithm"
+
+1759601578 c:\tank\tankwar\src\wall.h
+	<SDL.h>
+
+1759600419 c:\tank\tankwar\src\bullet.h
+	<SDL.h>
+
+1758422698 c:\tank\tankwar\src\constants.h
+
+1759999941 c:\tank\tankwar\src\enemytank.h
+	<SDL.h>
+	<vector>
+	"Bullet.h"
+	"Wall.h"
+	"Constants.h"
+
+1758422698 c:\tank\tankwar\src\explosion.h
+
+1759999885 source:c:\tank\tankwar\src\bullet.cpp
+	"bullet.h"
+	"constants.h"
+	<SDL.h>
+	<iostream>
+	<SDL_image.h>
+
+1760001005 source:c:\tank\tankwar\src\enemytank.cpp
+	"EnemyTank.h"
+	<algorithm>
+	<iostream>
+	<SDL_image.h>
+
+1760001409 source:c:\tank\tankwar\src\playertank.cpp
+	"playertank.h"
+	"constants.h"
+	<iostream>
+	<string>
+	<SDL.h>
+	<SDL_image.h>
+	<algorithm>
+
+1758422698 source:c:\tank\tankwar\src\wall.cpp
+	"Wall.h"
+	"Constants.h"
+	<SDL.h>
+	<SDL_image.h>
+
+1760084102 source:c:\tank\tankwar\src\game.cpp
+	"Game.h"
+	<iostream>
+	<cstdlib>
+	<string>
+	<fstream>
+	<SDL_mixer.h>
+	<ctime>
 

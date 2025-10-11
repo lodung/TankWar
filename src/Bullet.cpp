@@ -63,7 +63,7 @@ BigBullet::BigBullet(int startX, int startY, int dirX, int dirY, SDL_Renderer* r
         std::cerr << "Failed to load nuclear texture: " << IMG_GetError() << std::endl;
     }
     active = true;
-    rect = {x, y, 27, 27}; // Kích cỡ đạn
+    rect = {x, y, 60, 60}; // Kích cỡ đạn
     bigBulletSpeed = 4;
     calculateAngle();
 }
@@ -90,6 +90,7 @@ void BigBullet::move() {
         active = false;
     }
 }
+
 void BigBullet::render(SDL_Renderer* renderer) {
     if (active && bigBulletTexture) {
         SDL_RenderCopyEx(renderer, bigBulletTexture, NULL, &rect, angle, nullptr, SDL_FLIP_NONE);

@@ -148,12 +148,49 @@ BossTank::BossTank(int startX, int startY, SDL_Renderer* renderer) {
     rect = {x, y, TILE_SIZE*5, TILE_SIZE*5};
 }
 
+void BossTank::shoot(SDL_Renderer* renderer) {
+    Uint32 currentTime = SDL_GetTicks();
+    if (currentTime - lastShootTime < shootCooldown) return;
+    const int dirs[4][2] = { {0, -10}, {0, 10}, {-10, 0}, {10, 0} };
+    int cx = x + rect.w / 2;
+    int cy = y + rect.h / 2;
+    int offset = 32;
+    for (int i = 0; i < 4; ++i) {
+        int vx = dirs[i][0];
+        int vy = dirs[i][1];
+        // Đạn to ở giữa
+        bulletsS.emplace_back(cx - 27, cy - 10, vx, vy, renderer);
+        // Đạn nhỏ lệch hai bên
+        if (vy != 0) {
+            bullets.emplace_back(cx - 5 - offset, cy - 5, vx, vy, renderer);
+            bullets.emplace_back(cx - 5 + offset, cy - 5, vx, vy, renderer);
+        } else {
+            bullets.emplace_back(cx - 5, cy - 5 - offset, vx, vy, renderer);
+            bullets.emplace_back(cx - 5, cy - 5 + offset, vx, vy, renderer);
+        }
+    }
+    lastShootTime = currentTime;
+}
 
+void BossTank::updateBullets() {
+    for (auto& b : bullets) b.move();
+    bullets.erase(
+        std::remove_if(bullets.begin(), bullets.end(),
+            [](const Bullet& b){ return !b.active; }),
+        bullets.end()
+    );
+    for (auto& b : bulletsS) b.move();
+    bulletsS.erase(
+        std::remove_if(bulletsS.begin(), bulletsS.end(),
+            [](const BigBullet& b){ return !b.active; }),
+        bulletsS.end()
+    );
+}
 
 void BossTank::render(SDL_Renderer* renderer) {
     if (active)
         SDL_RenderCopy(renderer, bossTexture, NULL, &rect);
     // Hiển thị hp:
-    // Có thể vẽ text hoặc bar hp ở đây nếu muốn.
     for (auto& bullet : bullets) bullet.render(renderer);
+    for (auto& bullet : bulletsS) bullet.render(renderer);
 }

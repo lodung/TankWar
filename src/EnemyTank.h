@@ -35,11 +35,14 @@ public:
     SDL_Rect rect;
     SDL_Texture* bossTexture;
     bool active;
+    std::vector<BigBullet> bulletsS;
     std::vector<Bullet> bullets;
     Uint32 lastShootTime;
     Uint32 shootCooldown;
     BossTank(int startX, int startY, SDL_Renderer* renderer);
     BossTank();
+    void shoot(SDL_Renderer* renderer);
+    void updateBullets();
     void render(SDL_Renderer* renderer);
 };
-#endif // ENEMYTANK_H
+#endif

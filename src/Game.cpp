@@ -98,7 +98,7 @@ void Game::resetGame() {
     subMenu = false;
     isPause = false;
     score = 0;
-    level = 36;
+    level = 1;
     demslg1 = 10;
     enemiesSpawned = 0;
     lastSpawnTime = 0;
@@ -355,6 +355,9 @@ void Game::handleSubMenuSelection() {
     }
 }
 
+/////////////////////////////////////
+////Các thông báo trong trò chơi////
+///////////////////////////////////
 void Game::updateLevelDisplay() {
     std::string strCapDo;
     if (level == 36) {
@@ -527,7 +530,6 @@ void Game::updateMenuDisplay() {
         SDL_FreeSurface(optionSurface);
     }
 }
-
 void Game::updateSubMenuDisplay() {
     for (int i = 0; i < 3; i++) {
         SDL_Color optionColor;
@@ -760,19 +762,137 @@ void Game::update() {
      }
    }
 
-   // Prayer bắn vào tổng tài
+   // Player bắn vào Boss
    if (level == 36 && bossActive && boss.active) {
+    // Boss bắn và di chuyển đạn
+    boss.shoot(renderer);
+    boss.updateBullets();
+
+    // Va chạm đạn Boss với Tường
+    for (auto& wall : walls) {
+        if (!wall.active) continue;
+        // Đạn nhỏ
+        for (auto& b : boss.bullets) {
+            if (b.active && SDL_HasIntersection(&b.rect, &wall.rect)) {
+                wall.active = false;
+                b.active = false;
+                wallExplosions.emplace_back(renderer, wall.rect.x, wall.rect.y);
+            }
+        }
+        // Đạn to
+        for (auto& b : boss.bulletsS) {
+            if (b.active && SDL_HasIntersection(&b.rect, &wall.rect)) {
+                wall.active = false;
+                b.active = false;
+                wallExplosions.emplace_back(renderer, wall.rect.x, wall.rect.y);
+            }
+        }
+    }
+
+    // Va chạm đạn Boss với Đá (đạn bị chặn, đá không vỡ)
+    for (auto& stone : stones) {
+        if (!stone.active) continue;
+        for (auto& b : boss.bullets) {
+            if (b.active && SDL_HasIntersection(&b.rect, &stone.rect)) {
+                b.active = false;
+            }
+        }
+        for (auto& b : boss.bulletsS) {
+            if (b.active && SDL_HasIntersection(&b.rect, &stone.rect)) {
+                b.active = false;
+            }
+        }
+    }
+
+    // Va chạm đạn Boss với Player
+    for (auto& b : boss.bullets) {
+        if (player.active && b.active && SDL_HasIntersection(&b.rect, &player.rect)) {
+            player.hp--;
+            b.active = false;
+            if (player.hp <= 0) {
+                Explosions.emplace_back(renderer, player.rect.x, player.rect.y);
+                player.active = false;
+                player.rect = {0,0,0,0};
+            }
+        }
+    }
+        for (auto& b : boss.bulletsS) {
+            if (player.active && b.active && SDL_HasIntersection(&b.rect, &player.rect)) {
+                player.hp--;
+                b.active = false;
+                if (player.hp <= 0) {
+                    Explosions.emplace_back(renderer, player.rect.x, player.rect.y);
+                    player.active = false;
+                    player.rect = {0,0,0,0};
+                }
+            }
+        }
+
+    if (gameMode == 2) {
+    for (auto& b : boss.bullets) {
+        if (player2.active && b.active && SDL_HasIntersection(&b.rect, &player2.rect)) {
+            player2.hp--;
+            b.active = false;
+            if (player2.hp <= 0) {
+                Explosions.emplace_back(renderer, player2.rect.x, player2.rect.y);
+                player2.active = false;
+                player2.rect = {0,0,0,0};
+            }
+        }
+    }
+        for (auto& b : boss.bulletsS) {
+            if (player2.active && b.active && SDL_HasIntersection(&b.rect, &player2.rect)) {
+                player2.hp--;
+                b.active = false;
+                if (player2.hp <= 0) {
+                    Explosions.emplace_back(renderer, player2.rect.x, player2.rect.y);
+                    player2.active = false;
+                    player2.rect = {0,0,0,0};
+                }
+            }
+        }
+    }
+
+    for (auto& b : boss.bullets) {
+        if (b.active && base.active && SDL_HasIntersection(&b.rect, &base.rect)) {
+            base.hp--;
+            b.active = false;
+            if (base.hp <= 0) base.active = false;
+        }
+    }
+    for (auto& b : boss.bulletsS) {
+        if (b.active && base.active && SDL_HasIntersection(&b.rect, &base.rect)) {
+            base.hp--;
+            b.active = false;
+            if (base.hp <= 0) base.active = false;
+        }
+    }
+
+    // Player bắn vào boss (giữ nguyên như code cũ)
     for (auto& bullet : player.bullets) {
         if (SDL_HasIntersection(&bullet.rect, &boss.rect) && bullet.active) {
             bullet.active = false;
             boss.hp--;
             if (boss.hp <= 0) {
                 boss.active = false;
-                score += 1000; // Thưởng điểm khi giết boss
+                score += 1000;
                 Explosions.emplace_back(renderer, boss.rect.x, boss.rect.y);
             }
         }
     }
+    for (auto& bullet : player2.bullets) {
+        if (SDL_HasIntersection(&bullet.rect, &boss.rect) && bullet.active) {
+            bullet.active = false;
+            boss.hp--;
+            if (boss.hp <= 0) {
+                boss.active = false;
+                score += 1000;
+                Explosions.emplace_back(renderer, boss.rect.x, boss.rect.y);
+            }
+        }
+    }
+
+
     // Nếu có player2
     for (auto& bullet : player2.bullets) {
         if (SDL_HasIntersection(&bullet.rect, &boss.rect) && bullet.active) {
@@ -968,6 +1088,7 @@ void Game::update() {
         ),
     Explosions.end()
     );
+
     if (level == 36 && bossActive && !boss.active) {
         showWinMessage();
         saveScore();
@@ -989,7 +1110,7 @@ void Game::update() {
         if (level == 36 && !bossActive) {
         bossActive = true;
         boss = BossTank(
-            SCREEN_WIDTH / 2 - TILE_SIZE, // Vị trí giữa map, chỉnh nếu map khác
+            SCREEN_WIDTH / 2 - TILE_SIZE,
             SCREEN_HEIGHT / 2 - TILE_SIZE,
             renderer
         );
@@ -1004,13 +1125,12 @@ void Game::update() {
             player2 = PlayerTank(9 * TILE_SIZE, 13 * TILE_SIZE, renderer, "image/Player2.png",shootSound);
             player2.hp = (oldHp2 > 0) ? oldHp2 : 1;
         }
-        demslg1 = 0; // Không còn enemy thường nữa
+        demslg1 = 0;
         tocdo1 = 4;
         tocdo2 = 4;
         player.bullets.clear();
         wallExplosions.clear();
         generateWalls();
-        // Không spawnEnemies nữa!
         updateScoreDisplay();
         return;
     }
@@ -1040,7 +1160,9 @@ void Game::update() {
     }
 };
 
-
+////////////////////////////
+////Hiển thị ra màn hình////
+////////////////////////////
 void Game::render() {
     if (isPause == true && menu == false ) {
         //Hiển thị thông báo Pause.
@@ -1077,13 +1199,13 @@ void Game::render() {
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
     for (int i = 1; i < MAP_HEIGHT-1; ++i) {
     for (int j = 1; j < MAP_WIDTH-6; ++j) {
-        SDL_Rect tile = { j * TILE_SIZE, i * TILE_SIZE, TILE_SIZE, TILE_SIZE };
-        SDL_RenderFillRect(renderer, &tile);
+            SDL_Rect tile = { j * TILE_SIZE, i * TILE_SIZE, TILE_SIZE, TILE_SIZE };
+            SDL_RenderFillRect(renderer, &tile);
         }
     }
     // Thêm hàm render boss ở lv boss
     if (level == 36 && bossActive && boss.active) {
-    boss.render(renderer);
+        boss.render(renderer);
     }
 
     for (auto& water: waters) water.render(renderer);
@@ -1147,6 +1269,11 @@ void Game::run() {
         }
     }
 }
+
+
+//////////////
+////Save/////
+////////////
 void Game::saveScore() {
     std::ofstream file("scores.txt", std::ios::app);
     if (file.is_open()) {
@@ -1179,6 +1306,10 @@ void Game::loadScores() {
         std::cout << "No scores file found, will create one when game ends" << std::endl;
     }
 }
+
+/////////////
+////Ranking//
+/////////////
 void Game::showRanking() {
     // Xử lý sự kiện
     SDL_Event event;
@@ -1234,9 +1365,9 @@ void Game::updateRankingDisplay() {
         rankingTexture = nullptr;
     }
 
-    SDL_Color textColor = {57, 255, 20}; // Màu xanh lá
-    int startY = 200; // Vị trí Y bắt đầu render
-    int lineSpacing = 40; // Khoảng cách giữa các dòng
+    SDL_Color textColor = {57, 255, 20};
+    int startY = 200;
+    int lineSpacing = 40;
 
     for (size_t i = 0; i < rankingLines.size(); ++i) {
         SDL_Surface* lineSurface = TTF_RenderText_Solid(font, rankingLines[i].c_str(), textColor);
@@ -1244,7 +1375,7 @@ void Game::updateRankingDisplay() {
 
         SDL_Rect lineRect = {
             SCREEN_WIDTH / 2 - lineSurface->w / 2, // Canh giữa theo chiều ngang
-            startY + static_cast<int>(i) * lineSpacing, // Tính toán vị trí Y cho từng dòng
+            startY + static_cast<int>(i) * lineSpacing,
             lineSurface->w,
             lineSurface->h
         };
@@ -1256,6 +1387,8 @@ void Game::updateRankingDisplay() {
     }
 }
 
+
+// Deconstructor~~
 Game::~Game() {
     Mix_FreeMusic(backGroundMusic);
     SDL_DestroyRenderer(renderer);
