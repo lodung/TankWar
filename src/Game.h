@@ -17,8 +17,8 @@
 class Game {
 public:
     bool isPause;
-    bool lose;
     bool showingRanking = false;
+    bool showingSettings = false;
     bool over = false;
     int demslg1;
     SDL_Texture* menuBackgroundTexture = nullptr;
@@ -78,6 +78,7 @@ public:
     bool isMouseInRect(int mouseX, int mouseY, const SDL_Rect& rect);
     void handleMenuSelection();
     void handleSubMenuSelection();
+    void handleSettingsMenuSelection();
     void updateLevelDisplay();
     void updateScoreDisplay();
     void updateHpDisplay();
@@ -87,15 +88,21 @@ public:
     int selectedOption;
     SDL_Texture* titleTexture ;
     SDL_Rect titleRect;
-    SDL_Texture* optionsTexture[3];
-    SDL_Rect optionsRect[3] ;
+    SDL_Texture* optionsTexture[4];
+    SDL_Rect optionsRect[4] ;
     int gameMode = 0;
-    const char* menuOptions[3] = {"Start Game", "Ranking", "Exit"} ;
+    const char* menuOptions[4] = {"Start Game", "Settings", "Ranking", "Exit"};
     bool subMenu = false;
     int selectedSubMenuOption;
     SDL_Texture* subMenuOptionsTexture[3];
     SDL_Rect subMenuOptionsRect[3];
     const char* subMenuOptions[3] = {"1 Player", "2 Players", "Back"};
+
+    int selectedSettingsOption;
+    SDL_Texture* settingsOptionsTexture[3];
+    SDL_Rect settingsOptionsRect[3];
+    const char* settingsOptions[3] = {"Music", "Difficulty", "Back"};
+
     void resetGame();
     void showWinMessage();
     void showGameOverMessage();
@@ -105,6 +112,8 @@ public:
     void updateRankingDisplay();
     void showSubMenu();
     void updateSubMenuDisplay();
+    void showSettingsMenu();
+    void updateSettingsMenuDisplay();
     void loadMusic();
     void generateWalls();
     void spawnEnemies();
