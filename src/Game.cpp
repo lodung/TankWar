@@ -121,7 +121,7 @@ void Game::resetGame() {
     isPause = false;
     showingSettings = false;
     score = 0;
-    level = 1;
+    level = 36;
     demslg1 = 10;
     enemiesSpawned = 0;
     lastSpawnTime = 0;
@@ -1291,6 +1291,15 @@ void Game::update() {
         spawnEnemies();
         updateScoreDisplay();
     }
+         if (gameMode == 1 && player.active == false){
+            over = true;
+        }else if (gameMode == 2 && player.active == false && player2.active == false){
+            over = true;
+        }
+        else if (base.active == false){
+            Explosions.emplace_back(renderer, base.rect.x, base.rect.y);
+            over = true;
+        }
 };
 
 ////////////////////////////
