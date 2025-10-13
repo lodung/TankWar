@@ -29,6 +29,8 @@ public:
     SDL_Texture* rankingTexture = nullptr;
     SDL_Texture* baseHpTexture = nullptr;
     SDL_Texture* enemySpawmTexture = nullptr;
+     SDL_Texture* bossHpBarTexture = nullptr;
+    SDL_Texture* bossHpLabelTexture = nullptr;
     SDL_Rect enemySpawnRect;
     SDL_Rect baseHpRect;
     SDL_Rect hpRect;
@@ -36,6 +38,7 @@ public:
     SDL_Rect hp2Rect;
     SDL_Rect scoreRect;
     SDL_Rect levelTextRect;
+    SDL_Rect bossHpLabelRect;
     Mix_Chunk* shootSound;
     Mix_Chunk* levelUpSound;
     Mix_Chunk* winSound;
@@ -85,6 +88,7 @@ public:
     void showLevelUpMessage();
     void showMenu();
     void updateMenuDisplay();
+    void updateBossHpDisplay();
     int selectedOption;
     SDL_Texture* titleTexture ;
     SDL_Rect titleRect;

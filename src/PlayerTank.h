@@ -4,9 +4,9 @@
 #include <SDL_mixer.h>
 #include <vector>
 #include <string>
-#include "wall.h"
+#include "Wall.h"
 #include "Bullet.h"
-#include "constants.h"
+#include "Constants.h"
 #include "algorithm"
 
 class PlayerTank {

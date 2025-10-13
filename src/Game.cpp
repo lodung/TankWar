@@ -87,6 +87,13 @@ Game::Game() {
     if (!menuBackgroundTexture) {
         std::cerr << "Failed to load menu background image! " << IMG_GetError() << std::endl;
     }
+    SDL_Surface* hpBarSurface = SDL_CreateRGBSurface(0, 20, 20, 32, 0, 0, 0, 0);
+    SDL_FillRect(hpBarSurface, NULL, SDL_MapRGB(hpBarSurface->format, 255, 0, 0)); // Màu đỏ
+    bossHpBarTexture = SDL_CreateTextureFromSurface(renderer, hpBarSurface);
+    SDL_FreeSurface(hpBarSurface);
+    if (!bossHpBarTexture) {
+        std::cerr << "Failed to create boss hp bar texture!" << std::endl;
+    }
     Mix_VolumeMusic(60);
     menu = true;
     isPause = false;
@@ -140,11 +147,15 @@ void Game::resetGame() {
     generateWalls();
     if (level == 36) {
         bossActive = true;
+
         boss = BossTank(
             SCREEN_WIDTH / 2 - TILE_SIZE*5,
             SCREEN_HEIGHT / 2 - TILE_SIZE*3,
             renderer
-        ); } else {
+        );
+        //        boss.hp = 30;
+        updateBossHpDisplay();
+    } else {
     spawnEnemies();
     }
     updateLevelDisplay();
@@ -440,18 +451,18 @@ void Game::updateScoreDisplay() {
     SDL_FreeSurface(scoreSurface);
 }
 void Game::updateHpDisplay(){
-    std::string strHp1 = "HP I: " + std::to_string(player.hp);
-    SDL_Color textColor = {0, 0 ,0};
-    SDL_Surface* hpSurface = TTF_RenderText_Solid(font, strHp1.c_str(),textColor);
-    hpTexture = SDL_CreateTextureFromSurface(renderer,hpSurface);
-    hpRect = {SCREEN_WIDTH - 200, 120, hpSurface->w, hpSurface->h};
-    SDL_FreeSurface(hpSurface);
+        std::string strHp1 = "HP I: " + std::to_string(player.hp);
+        SDL_Color textColor = {0, 0 ,0};
+        SDL_Surface* hpSurface = TTF_RenderText_Solid(font, strHp1.c_str(),textColor);
+        hpTexture = SDL_CreateTextureFromSurface(renderer,hpSurface);
+        hpRect = {SCREEN_WIDTH - 200, 120, hpSurface->w, hpSurface->h};
+        SDL_FreeSurface(hpSurface);
     if (gameMode == 2){
-    std::string strHp2 = "HP II: " + std::to_string(player2.hp);
-    SDL_Surface* hp2Surface = TTF_RenderText_Solid(font, strHp2.c_str(),textColor);
-    hp2Texture = SDL_CreateTextureFromSurface(renderer,hp2Surface);
-    hp2Rect = {SCREEN_WIDTH - 200, 150, hp2Surface->w, hp2Surface->h};
-    SDL_FreeSurface(hp2Surface);
+        std::string strHp2 = "HP II: " + std::to_string(player2.hp);
+        SDL_Surface* hp2Surface = TTF_RenderText_Solid(font, strHp2.c_str(),textColor);
+        hp2Texture = SDL_CreateTextureFromSurface(renderer,hp2Surface);
+        hp2Rect = {SCREEN_WIDTH - 200, 150, hp2Surface->w, hp2Surface->h};
+        SDL_FreeSurface(hp2Surface);
     }
     std::string strBaseHp = "Base HP: " + std::to_string(base.hp);
     SDL_Surface* baseSurface = TTF_RenderText_Solid(font, strBaseHp.c_str(), textColor);
@@ -465,6 +476,20 @@ void Game::updateHpDisplay(){
     enemySpawnRect = {SCREEN_WIDTH - 200, 230, enemySurface->w, enemySurface->h};
     SDL_FreeSurface(enemySurface);
 }
+void Game::updateBossHpDisplay() {
+    if (bossHpLabelTexture) {
+        SDL_DestroyTexture(bossHpLabelTexture);
+        bossHpLabelTexture = nullptr;
+    }
+    SDL_Color textColor = {255, 127, 80};
+    SDL_Surface* textSurface = TTF_RenderText_Solid(font, "BOSS HP:", textColor);
+    if (textSurface) {
+        bossHpLabelTexture = SDL_CreateTextureFromSurface(renderer, textSurface);
+        bossHpLabelRect = {10, 10, textSurface->w, textSurface->h};
+        SDL_FreeSurface(textSurface);
+    }
+}
+
 void Game::showLevelUpMessage() {
     Mix_PauseMusic();
     Mix_PlayChannel(-1, levelUpSound, 0);
@@ -1218,13 +1243,13 @@ void Game::update() {
         if (level == 36 && !bossActive) {
         bossActive = true;
         boss = BossTank(
-            SCREEN_WIDTH / 2 - TILE_SIZE,
-            SCREEN_HEIGHT / 2 - TILE_SIZE,
+            SCREEN_WIDTH / 2 - TILE_SIZE*5,
+            SCREEN_HEIGHT / 2 - TILE_SIZE*3,
             renderer
         );
-        // Cập nhật lại hiển thị level
+        // Cập nhật lại hiển thị level và máu boss (nếu có)
         updateLevelDisplay();
-        // Có thể reset player vị trí hoặc hp nếu muốn
+        updateBossHpDisplay();
         int oldHp = player.hp;
         player = PlayerTank(5 * TILE_SIZE, 13 * TILE_SIZE, renderer, "image/Tank.png",shootSound);
         player.hp = (oldHp > 0) ? oldHp : 1;
@@ -1344,6 +1369,23 @@ void Game::render() {
     if (gameMode == 2 && hp2Texture) SDL_RenderCopy(renderer, hp2Texture, NULL, &hp2Rect);
     SDL_RenderCopy(renderer, baseHpTexture, NULL, &baseHpRect);
     SDL_RenderCopy(renderer, enemySpawmTexture, NULL, &enemySpawnRect);
+    // Thêm mới;
+    if (level == 36 && bossActive && boss.active) {
+        if (bossHpLabelTexture) {
+            SDL_RenderCopy(renderer, bossHpLabelTexture, NULL, &bossHpLabelRect);
+        }
+        if (bossHpBarTexture) {
+            int hpBlockWidth = 20;
+            int hpBlockSpacing = -1; // Khoảng cách nhỏ giữa các khối máu
+            int startX = bossHpLabelRect.x + bossHpLabelRect.w + 10;
+            int startY = bossHpLabelRect.y;
+
+            for (int i = 0; i < boss.hp; ++i) {
+                SDL_Rect hpRect = {startX + i * (hpBlockWidth + hpBlockSpacing), startY, hpBlockWidth, 25};
+                SDL_RenderCopy(renderer, bossHpBarTexture, NULL, &hpRect);
+            }
+        }
+    }
     SDL_RenderPresent(renderer);
 }
 
@@ -1375,6 +1417,7 @@ void Game::run() {
         update();
         updateScoreDisplay();
         updateHpDisplay();
+        if (bossActive) updateBossHpDisplay();
         render();
         SDL_Delay(16);
         }
@@ -1382,8 +1425,8 @@ void Game::run() {
 }
 
 
-//////////////
-////Save/////
+////////////
+////Save////
 ////////////
 void Game::saveScore() {
     std::ofstream file("scores.txt", std::ios::app);
@@ -1418,9 +1461,9 @@ void Game::loadScores() {
     }
 }
 
-/////////////
-////Ranking//
-/////////////
+///////////////
+////Ranking////
+///////////////
 void Game::showRanking() {
     // Xử lý sự kiện
     SDL_Event event;

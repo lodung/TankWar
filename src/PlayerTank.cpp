@@ -1,4 +1,4 @@
-#include "playertank.h"
+#include "PlayerTank.h"
 #include "constants.h"
 #include <iostream>
 #include <string>
