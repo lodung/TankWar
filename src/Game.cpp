@@ -120,6 +120,7 @@ void Game::resetGame() {
     subMenu = false;
     isPause = false;
     showingSettings = false;
+    showingGameModeMenu = false;
     score = 0;
     level = 1;
     demslg1 = 10;
@@ -276,7 +277,7 @@ void Game::handleMouseEvents(SDL_Event& event) {
             // Xử lý hover trong menu chính
             if (menu) {
                 int oldOption = selectedOption;
-                for (int i = 0; i < 4; i++) {
+                for (int i = 0; i < 5; i++) {
                     if (isMouseInRect(mouseX, mouseY, optionsRect[i])) {
                         selectedOption = i;
                         break;
@@ -296,7 +297,18 @@ void Game::handleMouseEvents(SDL_Event& event) {
                 if (oldOption != selectedSubMenuOption) {
                     updateSubMenuDisplay();
                 }
-                else if (showingSettings) {
+            }
+            else if (showingGameModeMenu) {
+                int oldOption = selectedGameModeMenuOption;
+                for (int i = 0; i < 3; i++) {
+                    if (isMouseInRect(mouseX, mouseY, gameModeMenuOptionsRect[i])) {
+                        selectedGameModeMenuOption = i;
+                        break;
+                    }
+                }
+                if (oldOption != selectedGameModeMenuOption) updateGameModeMenuDisplay();
+            }
+            else if (showingSettings) {
                 int oldOption = selectedSettingsOption;
                 for (int i = 0; i < 3; i++) {
                     if (isMouseInRect(mouseX, mouseY, settingsOptionsRect[i])) {
@@ -306,7 +318,6 @@ void Game::handleMouseEvents(SDL_Event& event) {
                 }
                 if (oldOption != selectedSettingsOption) updateSettingsMenuDisplay();
             }
-            }
             break;
 
         case SDL_MOUSEBUTTONDOWN:
@@ -315,7 +326,7 @@ void Game::handleMouseEvents(SDL_Event& event) {
 
                 // Xử lý click trong menu chính
                 if (menu) {
-                     for (int i = 0; i < 4; i++) {
+                     for (int i = 0; i < 5; i++) {
                         if (isMouseInRect(mouseX, mouseY, optionsRect[i])) {
                             selectedOption = i;
                             handleMenuSelection();
@@ -329,6 +340,15 @@ void Game::handleMouseEvents(SDL_Event& event) {
                         if (isMouseInRect(mouseX, mouseY, subMenuOptionsRect[i])) {
                             selectedSubMenuOption = i;
                             handleSubMenuSelection();
+                            break;
+                        }
+                    }
+                }
+                else if (showingGameModeMenu) {
+                    for (int i = 0; i < 3; i++) {
+                        if (isMouseInRect(mouseX, mouseY, gameModeMenuOptionsRect[i])) {
+                            selectedGameModeMenuOption = i;
+                            handleGameModeMenuSelection();
                             break;
                         }
                     }
@@ -367,19 +387,25 @@ void Game::handleMenuSelection() {
             selectedSubMenuOption = 0;
             updateSubMenuDisplay();
             break;
-        case 1: // Settings
+        case 1: // Game Mode
+            menu = false;
+            showingGameModeMenu = true;
+            selectedGameModeMenuOption = 0;
+            updateGameModeMenuDisplay();
+            break;
+        case 2: // Settings
             menu = false;
             showingSettings = true;
             selectedSettingsOption = 0;
             updateSettingsMenuDisplay();
             break;
-        case 2: // Ranking
+        case 3: // Ranking
             showingRanking = true;
             menu = false;
             loadScores();
             updateRankingDisplay();
             break;
-        case 3: // Exit
+        case 4: // Exit
             running = false;
             menu = false;
             break;
@@ -432,7 +458,21 @@ void Game::handleSettingsMenuSelection() {
             break;
     }
 }
-
+void Game::handleGameModeMenuSelection() {
+    switch (selectedGameModeMenuOption) {
+        case 0: // PvP
+            std::cout << "PvP mode is still under development." << std::endl;
+            break;
+        case 1: // Creative
+            std::cout << "Creative mode is still under development." << std::endl;
+            break;
+        case 2: // Back
+            showingGameModeMenu = false;
+            menu = true;
+            updateMenuDisplay();
+            break;
+    }
+}
 
 /////////////////////////////////////
 ////Các thông báo trong trò chơi////
@@ -609,7 +649,7 @@ void Game::updateMenuDisplay() {
     SDL_FreeSurface(titleSurface);
 
     // Tạo texture cho các tùy chọn menu
-    for (int i = 0; i < 4; i++) {
+    for (int i = 0; i < 5; i++) {
         SDL_Color optionColor;
         if (i == selectedOption) {
             optionColor = {255, 255, 0}; // Màu vàng cho tùy chọn được chọn
@@ -658,6 +698,19 @@ void Game::updateSettingsMenuDisplay() {
         }
     }
 }
+void Game::updateGameModeMenuDisplay() {
+    for (int i = 0; i < 3; i++) {
+        SDL_Color optionColor = (i == selectedGameModeMenuOption) ? SDL_Color{255, 255, 0} : SDL_Color{255, 255, 255};
+
+        SDL_Surface* optionSurface = TTF_RenderText_Solid(font, gameModeMenuOptions[i], optionColor);
+        if (optionSurface) {
+             if (gameModeMenuOptionsTexture[i]) SDL_DestroyTexture(gameModeMenuOptionsTexture[i]);
+             gameModeMenuOptionsTexture[i] = SDL_CreateTextureFromSurface(renderer, optionSurface);
+             gameModeMenuOptionsRect[i] = {SCREEN_WIDTH / 2 - optionSurface->w / 2, 250 + i * 70, optionSurface->w, optionSurface->h};
+             SDL_FreeSurface(optionSurface);
+        }
+    }
+}
 
 void Game::showMenu() {
     SDL_Event event;
@@ -669,11 +722,11 @@ void Game::showMenu() {
         else if (event.type == SDL_KEYDOWN) {
             switch (event.key.keysym.sym) {
                 case SDLK_UP:
-                    selectedOption = (selectedOption - 1 + 4) % 4;
+                    selectedOption = (selectedOption - 1 + 5) % 5;
                     updateMenuDisplay();
                     break;
                 case SDLK_DOWN:
-                    selectedOption = (selectedOption + 1) % 4;
+                    selectedOption = (selectedOption + 1) % 5;
                     updateMenuDisplay();
                     break;
                 case SDLK_RETURN:
@@ -693,7 +746,7 @@ void Game::showMenu() {
     }
     // Vẽ title, options, viền...
     SDL_RenderCopy(renderer, titleTexture, NULL, &titleRect);
-    for (int i = 0; i < 4; i++) {
+    for (int i = 0; i < 5; i++) {
         if(optionsTexture[i]) SDL_RenderCopy(renderer, optionsTexture[i], NULL, &optionsRect[i]);
     }
     SDL_SetRenderDrawColor(renderer, 255, 255, 0, 255);
@@ -831,7 +884,75 @@ void Game::showSettingsMenu() {
 
     SDL_RenderPresent(renderer);
 }
+void Game::showGameModeMenu() {
+    SDL_Event event;
+    while (SDL_PollEvent(&event)) {
+        if (event.type == SDL_QUIT) {
+            running = false;
+            showingGameModeMenu = false;
+        }
+        else if (event.type == SDL_KEYDOWN) {
+            switch (event.key.keysym.sym) {
+                case SDLK_UP:
+                    selectedGameModeMenuOption = (selectedGameModeMenuOption - 1 + 3) % 3;
+                    updateGameModeMenuDisplay();
+                    break;
+                case SDLK_DOWN:
+                    selectedGameModeMenuOption = (selectedGameModeMenuOption + 1) % 3;
+                    updateGameModeMenuDisplay();
+                    break;
+                case SDLK_RETURN:
+                    handleGameModeMenuSelection();
+                    break;
+                 case SDLK_ESCAPE:
+                    showingGameModeMenu = false;
+                    menu = true;
+                    updateMenuDisplay();
+                    break;
+            }
+        }
+        handleMouseEvents(event);
+    }
 
+    SDL_Rect bgRect = {0, 0, SCREEN_WIDTH, SCREEN_HEIGHT};
+    if (menuBackgroundTexture) {
+        SDL_RenderCopy(renderer, menuBackgroundTexture, NULL, &bgRect);
+    } else {
+        SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+        SDL_RenderClear(renderer);
+    }
+
+    SDL_Color titleColor = {255, 255, 0};
+    SDL_Surface* titleSurface = TTF_RenderText_Solid(font2, "Game Mode", titleColor);
+    SDL_Texture* titleTexture = SDL_CreateTextureFromSurface(renderer, titleSurface);
+    SDL_Rect titleRect = {SCREEN_WIDTH / 2 - titleSurface->w / 2, 100, titleSurface->w, titleSurface->h};
+    SDL_RenderCopy(renderer, titleTexture, NULL, &titleRect);
+    SDL_FreeSurface(titleSurface);
+    SDL_DestroyTexture(titleTexture);
+
+    for (int i = 0; i < 3; i++) {
+         if (gameModeMenuOptionsTexture[i]) {
+            SDL_RenderCopy(renderer, gameModeMenuOptionsTexture[i], NULL, &gameModeMenuOptionsRect[i]);
+         }
+    }
+
+    SDL_SetRenderDrawColor(renderer, 255, 255, 0, 255);
+     if (gameModeMenuOptionsTexture[selectedGameModeMenuOption]) {
+        SDL_Rect selectedRectHighlight = {
+            gameModeMenuOptionsRect[selectedGameModeMenuOption].x - 20,
+            gameModeMenuOptionsRect[selectedGameModeMenuOption].y - 5,
+            gameModeMenuOptionsRect[selectedGameModeMenuOption].w + 40,
+            gameModeMenuOptionsRect[selectedGameModeMenuOption].h + 10
+        };
+        SDL_RenderDrawRect(renderer, &selectedRectHighlight);
+     }
+
+    SDL_RenderPresent(renderer);
+}
+
+//////////////////
+////Update t.t////
+//////////////////
 void Game::update() {
     if (isPause) return;
     //Update đạn
@@ -1422,6 +1543,9 @@ void Game::run() {
         }
         else if (subMenu){
             showSubMenu();
+        }
+        else if (showingGameModeMenu) {
+            showGameModeMenu();
         }
         else if (showingSettings) {
             showSettingsMenu();

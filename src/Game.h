@@ -19,6 +19,7 @@ public:
     bool isPause;
     bool showingRanking = false;
     bool showingSettings = false;
+    bool showingGameModeMenu = false;
     bool over = false;
     bool isHardMode = false;
     int demslg1;
@@ -83,6 +84,7 @@ public:
     void handleMenuSelection();
     void handleSubMenuSelection();
     void handleSettingsMenuSelection();
+    void handleGameModeMenuSelection();
     void updateLevelDisplay();
     void updateScoreDisplay();
     void updateHpDisplay();
@@ -93,11 +95,13 @@ public:
     int selectedOption;
     SDL_Texture* titleTexture ;
     SDL_Rect titleRect;
-    SDL_Texture* optionsTexture[4];
-    SDL_Rect optionsRect[4] ;
+
+    SDL_Texture* optionsTexture[5];
+    SDL_Rect optionsRect[5];
     int gameMode = 0;
-    const char* menuOptions[4] = {"Start Game", "Settings", "Ranking", "Exit"};
+    const char* menuOptions[5] = {"Start Game", "Game Mode", "Settings", "Ranking", "Exit"};
     bool subMenu = false;
+
     int selectedSubMenuOption;
     SDL_Texture* subMenuOptionsTexture[3];
     SDL_Rect subMenuOptionsRect[3];
@@ -107,6 +111,11 @@ public:
     SDL_Texture* settingsOptionsTexture[3];
     SDL_Rect settingsOptionsRect[3];
     const char* settingsOptions[3] = {"Music", "Difficulty: Normal", "Back"};
+
+    int selectedGameModeMenuOption;
+    SDL_Texture* gameModeMenuOptionsTexture[3];
+    SDL_Rect gameModeMenuOptionsRect[3];
+    const char* gameModeMenuOptions[3] = {"PvP", "Creative", "Back"};
 
     void resetGame();
     void showWinMessage();
@@ -119,6 +128,8 @@ public:
     void updateSubMenuDisplay();
     void showSettingsMenu();
     void updateSettingsMenuDisplay();
+    void showGameModeMenu();
+    void updateGameModeMenuDisplay();
     void loadMusic();
     void generateWalls();
     void spawnEnemies();
