@@ -3,10 +3,11 @@
 #include <iostream>
 #include <SDL_image.h>
 
-EnemyTank::EnemyTank(int startX, int startY, SDL_Renderer *renderer) {
+EnemyTank::EnemyTank(int startX, int startY, SDL_Renderer *renderer, int health) {
     moveDelay = 5;
     x = startX;
     y = startY;
+    hp = health;
     enemyTexture = IMG_LoadTexture(renderer, "image/enemy1.png");
     rect = {x, y, TILE_SIZE, TILE_SIZE};
     dirX = 0;

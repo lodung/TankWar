@@ -20,6 +20,7 @@ public:
     bool showingRanking = false;
     bool showingSettings = false;
     bool over = false;
+    bool isHardMode = false;
     int demslg1;
     SDL_Texture* menuBackgroundTexture = nullptr;
     SDL_Texture* levelTextTexture = nullptr;
@@ -105,7 +106,7 @@ public:
     int selectedSettingsOption;
     SDL_Texture* settingsOptionsTexture[3];
     SDL_Rect settingsOptionsRect[3];
-    const char* settingsOptions[3] = {"Music", "Difficulty", "Back"};
+    const char* settingsOptions[3] = {"Music", "Difficulty: Normal", "Back"};
 
     void resetGame();
     void showWinMessage();

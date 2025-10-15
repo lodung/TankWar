@@ -121,7 +121,7 @@ void Game::resetGame() {
     isPause = false;
     showingSettings = false;
     score = 0;
-    level = 36;
+    level = 1;
     demslg1 = 10;
     enemiesSpawned = 0;
     lastSpawnTime = 0;
@@ -154,6 +154,7 @@ void Game::resetGame() {
             renderer
         );
         //        boss.hp = 30;
+        boss.hp = isHardMode ? 30 : 20;
         updateBossHpDisplay();
     } else {
     spawnEnemies();
@@ -223,7 +224,8 @@ void Game::spawnEnemies() {
         } else {
             spawnPoint = {13 * TILE_SIZE, 1 * TILE_SIZE};
         }
-        enemies.push_back(EnemyTank(spawnPoint.x, spawnPoint.y, renderer));
+        int enemyHp = isHardMode ? 2 : 1;
+        enemies.push_back(EnemyTank(spawnPoint.x, spawnPoint.y, renderer, enemyHp));
         enemiesSpawned++;
         lastSpawnTime = SDL_GetTicks();
     }
@@ -415,7 +417,13 @@ void Game::handleSettingsMenuSelection() {
             std::cout << "Music ON/OFF." << std::endl;
             break;
         case 1:
-            std::cout << "Difficulty TEST" << std::endl;
+            isHardMode = !isHardMode;
+            if (isHardMode) {
+                settingsOptions[1] = "Difficulty: Hard";
+            } else {
+                settingsOptions[1] = "Difficulty: Normal";
+            }
+            updateSettingsMenuDisplay();
             break;
         case 2:
             showingSettings = false;
@@ -1097,22 +1105,29 @@ void Game::update() {
     for (auto& bullet : player.bullets) {
         for (auto& enemy : enemies) {
             if (enemy.active && SDL_HasIntersection(&bullet.rect, &enemy.rect)) {
-                enemy.active = false;
+                enemy.hp--;
+               // enemy.active = false;
                 bullet.active = false;
-                demslg1--;
-                Explosions.emplace_back(renderer, enemy.rect.x, enemy.rect.y);
-                score +=100;
+                if (enemy.hp <= 0) {
+                    enemy.active = false;
+                    demslg1--;
+                    Explosions.emplace_back(renderer, enemy.rect.x, enemy.rect.y);
+                    score +=100;
+                }
             }
         }
     }
     for (auto& bullet : player2.bullets) {
         for (auto& enemy : enemies) {
             if (enemy.active && SDL_HasIntersection(&bullet.rect, &enemy.rect)) {
-                enemy.active = false;
+               // enemy.active = false;
                 bullet.active = false;
-                demslg1--;
-                Explosions.emplace_back(renderer, enemy.rect.x, enemy.rect.y);
-                score +=100;
+                if (enemy.hp <= 0) {
+                    enemy.active = false;
+                    demslg1--;
+                    Explosions.emplace_back(renderer, enemy.rect.x, enemy.rect.y);
+                    score +=100;
+                }
             }
         }
     }
@@ -1240,13 +1255,14 @@ void Game::update() {
         // Nếu level trên 36 thì sẽ win luôn
 
 
-        if (level == 36 && !bossActive) {
+    if (level == 36 && !bossActive) {
         bossActive = true;
         boss = BossTank(
             SCREEN_WIDTH / 2 - TILE_SIZE*5,
             SCREEN_HEIGHT / 2 - TILE_SIZE*3,
             renderer
         );
+        boss.hp = isHardMode ? 30 : 20;
         // Cập nhật lại hiển thị level và máu boss (nếu có)
         updateLevelDisplay();
         updateBossHpDisplay();

@@ -9,6 +9,7 @@ using namespace std;
 class EnemyTank {
 public:
     int x, y;
+    int hp;
     int dirX, dirY;
     double angle;
     int moveDelay;
@@ -18,7 +19,7 @@ public:
     SDL_Texture *enemyTexture;
     bool active;
     vector<Bullet> bullets;
-    EnemyTank(int startX, int startY,SDL_Renderer *renderer);
+    EnemyTank(int startX, int startY,SDL_Renderer *renderer, int health = 1);
     void moveTowardPlayer(int playerX, int playerY, const vector<Wall>& walls,const vector<Stone>& stones);
     bool canMove(int newX, int newY, const vector<Wall>& walls, const vector<Stone>& stones);
     void applyMove(int dx, int dy);
