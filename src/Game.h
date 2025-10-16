@@ -22,7 +22,10 @@ public:
     bool showingGameModeMenu = false;
     bool over = false;
     bool isHardMode = false;
+    bool isPvpMode = false;
+    bool showingWinner = false;
     int demslg1;
+    SDL_Texture* winnerTexture = nullptr;
     SDL_Texture* menuBackgroundTexture = nullptr;
     SDL_Texture* levelTextTexture = nullptr;
     SDL_Texture* scoreTexture = nullptr;
@@ -31,7 +34,7 @@ public:
     SDL_Texture* rankingTexture = nullptr;
     SDL_Texture* baseHpTexture = nullptr;
     SDL_Texture* enemySpawmTexture = nullptr;
-     SDL_Texture* bossHpBarTexture = nullptr;
+    SDL_Texture* bossHpBarTexture = nullptr;
     SDL_Texture* bossHpLabelTexture = nullptr;
     SDL_Rect enemySpawnRect;
     SDL_Rect baseHpRect;
@@ -41,6 +44,7 @@ public:
     SDL_Rect scoreRect;
     SDL_Rect levelTextRect;
     SDL_Rect bossHpLabelRect;
+    SDL_Rect winnerRect;
     Mix_Chunk* shootSound;
     Mix_Chunk* levelUpSound;
     Mix_Chunk* winSound;
@@ -67,6 +71,7 @@ public:
     int level;
     bool menu;
     int tocdo1,tocdo2;
+    std::string winnerName;
     std::string dangcap;
     std::vector<int> highScores;
     std::vector<wallExplosion> wallExplosions;
@@ -120,6 +125,7 @@ public:
     void resetGame();
     void showWinMessage();
     void showGameOverMessage();
+    void showWinnerMessage();
     void saveScore();
     void loadScores();
     void showRanking();

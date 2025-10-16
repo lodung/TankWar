@@ -91,6 +91,7 @@ void PlayerTank::render(SDL_Renderer* renderer) {
     if (active){
     if (tankTexture) {
         SDL_RenderCopyEx(renderer, tankTexture, NULL, &rect, angle, nullptr, SDL_FLIP_NONE);
+        //SDL ex là bản nâng cấp của SDL_rendercopy (renderer<bút vẽ> , tankTexture, NULL, &rect, angle, nullptr, SDL_FlipNone;
     }
     for (auto& bullet : bullets) {
         bullet.render(renderer);

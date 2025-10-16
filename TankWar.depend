@@ -75,7 +75,7 @@
 	<iostream>
 	<SDL_image.h>
 
-1760363312 source:d:\tankwar\src\playertank.cpp
+1760619931 source:d:\tankwar\src\playertank.cpp
 	"PlayerTank.h"
 	"constants.h"
 	<iostream>
@@ -90,7 +90,7 @@
 	<SDL.h>
 	<SDL_image.h>
 
-1760552727 d:\tankwar\src\game.h
+1760617470 d:\tankwar\src\game.h
 	<SDL.h>
 	<SDL_image.h>
 	<vector>
@@ -104,7 +104,7 @@
 	"Explosion.h"
 	"Constants.h"
 
-1760553035 source:d:\tankwar\src\game.cpp
+1760619882 source:d:\tankwar\src\game.cpp
 	"Game.h"
 	<iostream>
 	<cstdlib>
@@ -118,7 +118,7 @@
 1758422698 source:d:\tankwar\src\explosion.cpp
 	"Explosion.h"
 
-1758422698 source:c:\tank\tankwar\main.cpp
+1760551118 source:c:\tank\tankwar\main.cpp
 	<iostream>
 	<SDL.h>
 	<SDL_image.h>
@@ -127,7 +127,7 @@
 	<algorithm>
 	"src/Game.h"
 
-1760083788 c:\tank\tankwar\src\game.h
+1760617470 c:\tank\tankwar\src\game.h
 	<SDL.h>
 	<SDL_image.h>
 	<vector>
@@ -141,14 +141,14 @@
 	"Explosion.h"
 	"Constants.h"
 
-1759600321 c:\tank\tankwar\src\playertank.h
+1760199761 c:\tank\tankwar\src\playertank.h
 	<SDL.h>
 	<SDL_mixer.h>
 	<vector>
 	<string>
-	"wall.h"
+	"Wall.h"
 	"Bullet.h"
-	"constants.h"
+	"Constants.h"
 	"algorithm"
 
 1759601578 c:\tank\tankwar\src\wall.h
@@ -159,7 +159,7 @@
 
 1758422698 c:\tank\tankwar\src\constants.h
 
-1759999941 c:\tank\tankwar\src\enemytank.h
+1760547770 c:\tank\tankwar\src\enemytank.h
 	<SDL.h>
 	<vector>
 	"Bullet.h"
@@ -175,14 +175,14 @@
 	<iostream>
 	<SDL_image.h>
 
-1760001005 source:c:\tank\tankwar\src\enemytank.cpp
+1760547784 source:c:\tank\tankwar\src\enemytank.cpp
 	"EnemyTank.h"
 	<algorithm>
 	<iostream>
 	<SDL_image.h>
 
-1760001409 source:c:\tank\tankwar\src\playertank.cpp
-	"playertank.h"
+1760616858 source:c:\tank\tankwar\src\playertank.cpp
+	"PlayerTank.h"
 	"constants.h"
 	<iostream>
 	<string>

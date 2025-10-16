@@ -121,20 +121,48 @@ void Game::resetGame() {
     isPause = false;
     showingSettings = false;
     showingGameModeMenu = false;
+    showingWinner = false;
     score = 0;
-    level = 1;
+  //  level = 35;
     demslg1 = 10;
     enemiesSpawned = 0;
     lastSpawnTime = 0;
     bossActive = false;
-    boss.active = true;
-    player = PlayerTank(5 * TILE_SIZE, 13 * TILE_SIZE, renderer, "image/Tank.png", shootSound);
-    player.hp = 3;
-    player2 = PlayerTank(9 * TILE_SIZE, 13 * TILE_SIZE, renderer, "image/Player2.png", shootSound);
-    player2.hp = 3;
-    base = Base(7 * TILE_SIZE, 13 * TILE_SIZE, renderer);
-    base.hp = 1;
-    base.active = true;
+    boss.active = false;
+
+    if (isPvpMode) {
+        level = 36;
+        player = PlayerTank(2 * TILE_SIZE, 4 * TILE_SIZE, renderer, "image/Tank.png", shootSound);
+        player.hp = 5; // PvP có nhiều máu hơn
+        player2 = PlayerTank(12 * TILE_SIZE + 20 , 11 * TILE_SIZE, renderer, "image/Player2.png", shootSound);
+        player2.hp = 5; // Yes sir
+        player2.active = true;
+        base.active = false; // NO BASE
+        enemies.clear();
+        boss.active = false;
+        demslg1 = 0;
+    } else {
+        level = 35;
+        player = PlayerTank(5 * TILE_SIZE, 13 * TILE_SIZE, renderer, "image/Tank.png", shootSound);
+        player.hp = 3;
+        player2 = PlayerTank(9 * TILE_SIZE, 13 * TILE_SIZE, renderer, "image/Player2.png", shootSound);
+        player2.hp = 3;
+        base = Base(7 * TILE_SIZE, 13 * TILE_SIZE, renderer);
+        base.hp = 1;
+        base.active = true;
+        if (!isPvpMode) {
+            if (level == 36) {
+                bossActive = true;
+                boss = BossTank(SCREEN_WIDTH / 2 - TILE_SIZE * 5,
+                                SCREEN_HEIGHT / 2 - TILE_SIZE * 3,
+                                renderer);
+                boss.hp = isHardMode ? 30 : 20;
+                updateBossHpDisplay();
+            } else {
+                spawnEnemies();
+            }
+        }
+    }
     tocdo1 = 4;
     tocdo2 = 4;
     enemies.clear();
@@ -146,19 +174,17 @@ void Game::resetGame() {
     ices.clear();
     dangcap = std::to_string(level);
     generateWalls();
-    if (level == 36) {
-        bossActive = true;
-
-        boss = BossTank(
-            SCREEN_WIDTH / 2 - TILE_SIZE*5,
-            SCREEN_HEIGHT / 2 - TILE_SIZE*3,
-            renderer
-        );
-        //        boss.hp = 30;
-        boss.hp = isHardMode ? 30 : 20;
-        updateBossHpDisplay();
-    } else {
-    spawnEnemies();
+    if (!isPvpMode) {
+        if (level == 36) {
+            bossActive = true;
+            boss = BossTank(SCREEN_WIDTH / 2 - TILE_SIZE * 5,
+                            SCREEN_HEIGHT / 2 - TILE_SIZE * 3,
+                            renderer);
+            boss.hp = isHardMode ? 30 : 20;
+            updateBossHpDisplay();
+        } else {
+            spawnEnemies();
+        }
     }
     updateLevelDisplay();
     updateScoreDisplay();
@@ -214,7 +240,7 @@ void Game::generateWalls() {
 }
 
 void Game::spawnEnemies() {
-    if (level == 36) return;
+    if (level == 36 || isPvpMode) return;
     if (enemies.size() < 3 && enemiesSpawned < 10 && SDL_GetTicks() - lastSpawnTime >= 3000)
     {
         int spawnSide = rand() % 2; // 0: Góc trái, 1: Góc phải
@@ -384,6 +410,7 @@ void Game::handleMenuSelection() {
         case 0: // Start Game
             menu = false;
             subMenu = true;
+            isPvpMode = false;
             selectedSubMenuOption = 0;
             updateSubMenuDisplay();
             break;
@@ -461,7 +488,10 @@ void Game::handleSettingsMenuSelection() {
 void Game::handleGameModeMenuSelection() {
     switch (selectedGameModeMenuOption) {
         case 0: // PvP
-            std::cout << "PvP mode is still under development." << std::endl;
+            isPvpMode = true;
+            gameMode = 3; // Game mode 3 là PvP
+            resetGame();
+            showingGameModeMenu = false;
             break;
         case 1: // Creative
             std::cout << "Creative mode is still under development." << std::endl;
@@ -479,7 +509,9 @@ void Game::handleGameModeMenuSelection() {
 ///////////////////////////////////
 void Game::updateLevelDisplay() {
     std::string strCapDo;
-    if (level == 36) {
+    if (isPvpMode) {
+        strCapDo = "MODE: PVP";
+    } else if (level == 36) {
         strCapDo = "LEVEL: BOSS";
     } else {
         strCapDo = "LEVEL: " + std::to_string(level);
@@ -505,24 +537,26 @@ void Game::updateHpDisplay(){
         hpTexture = SDL_CreateTextureFromSurface(renderer,hpSurface);
         hpRect = {SCREEN_WIDTH - 200, 120, hpSurface->w, hpSurface->h};
         SDL_FreeSurface(hpSurface);
-    if (gameMode == 2){
+    if (gameMode == 2 || isPvpMode) {
         std::string strHp2 = "HP II: " + std::to_string(player2.hp);
         SDL_Surface* hp2Surface = TTF_RenderText_Solid(font, strHp2.c_str(),textColor);
         hp2Texture = SDL_CreateTextureFromSurface(renderer,hp2Surface);
         hp2Rect = {SCREEN_WIDTH - 200, 150, hp2Surface->w, hp2Surface->h};
         SDL_FreeSurface(hp2Surface);
     }
-    std::string strBaseHp = "Base HP: " + std::to_string(base.hp);
-    SDL_Surface* baseSurface = TTF_RenderText_Solid(font, strBaseHp.c_str(), textColor);
-    baseHpTexture = SDL_CreateTextureFromSurface(renderer, baseSurface);
-    baseHpRect = {SCREEN_WIDTH - 200, 190, baseSurface->w, baseSurface->h};
-    SDL_FreeSurface(baseSurface);
-    SDL_Color text2Color = {255, 50, 50};
-    std::string strEnemy = "Enemies: " + std::to_string(demslg1);
-    SDL_Surface* enemySurface = TTF_RenderText_Solid(font, strEnemy.c_str(),text2Color);
-    enemySpawmTexture = SDL_CreateTextureFromSurface(renderer, enemySurface);
-    enemySpawnRect = {SCREEN_WIDTH - 200, 230, enemySurface->w, enemySurface->h};
-    SDL_FreeSurface(enemySurface);
+    if (!isPvpMode) {
+        std::string strBaseHp = "Base HP: " + std::to_string(base.hp);
+        SDL_Surface* baseSurface = TTF_RenderText_Solid(font, strBaseHp.c_str(), textColor);
+        baseHpTexture = SDL_CreateTextureFromSurface(renderer, baseSurface);
+        baseHpRect = {SCREEN_WIDTH - 200, 190, baseSurface->w, baseSurface->h};
+        SDL_FreeSurface(baseSurface);
+        SDL_Color text2Color = {255, 50, 50};
+        std::string strEnemy = "Enemies: " + std::to_string(demslg1);
+        SDL_Surface* enemySurface = TTF_RenderText_Solid(font, strEnemy.c_str(),text2Color);
+        enemySpawmTexture = SDL_CreateTextureFromSurface(renderer, enemySurface);
+        enemySpawnRect = {SCREEN_WIDTH - 200, 230, enemySurface->w, enemySurface->h};
+        SDL_FreeSurface(enemySurface);
+    }
 }
 void Game::updateBossHpDisplay() {
     if (bossHpLabelTexture) {
@@ -641,8 +675,52 @@ void Game::showWinMessage() {
     SDL_Delay(4500);
     Mix_ResumeMusic();
 }
+void Game::showWinnerMessage() {
+    Mix_PauseMusic();
+    Mix_PlayChannel(-1, winSound, 0);
+
+    SDL_Color winnerColor = {0, 255, 255}; // Màu xanh lam
+    SDL_Surface* winnerSurface = TTF_RenderText_Solid(fontLevelUp, winnerName.c_str(), winnerColor);
+    SDL_Texture* winnerTexture = SDL_CreateTextureFromSurface(renderer, winnerSurface);
+    SDL_Rect winnerRect = {
+        SCREEN_WIDTH / 2 - winnerSurface->w / 2,
+        SCREEN_HEIGHT / 2 - winnerSurface->h / 2 - 50,
+        winnerSurface->w,
+        winnerSurface->h
+    };
+
+    SDL_Color infoColor = {255, 255, 255}; // Màu trắng
+    SDL_Surface* infoSurface = TTF_RenderUTF8_Solid(font, "Tự động quay về menu...", infoColor);
+    SDL_Texture* infoTexture = SDL_CreateTextureFromSurface(renderer, infoSurface);
+    SDL_Rect infoRect = {
+        SCREEN_WIDTH / 2 - infoSurface->w / 2,
+        winnerRect.y + winnerRect.h + 20,
+        infoSurface->w,
+        infoSurface->h
+    };
+    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+    SDL_RenderClear(renderer);
+
+    SDL_RenderCopy(renderer, winnerTexture, NULL, &winnerRect);
+    SDL_RenderCopy(renderer, infoTexture, NULL, &infoRect);
+
+    SDL_RenderPresent(renderer);
+
+    SDL_FreeSurface(winnerSurface);
+    SDL_DestroyTexture(winnerTexture);
+    SDL_FreeSurface(infoSurface);
+    SDL_DestroyTexture(infoTexture);
+
+    SDL_Delay(3000); // Đợi 3 giây
+
+    showingWinner = false;
+    isPvpMode = false;
+    menu = true;
+    updateMenuDisplay();
+    Mix_ResumeMusic();
+}
 void Game::updateMenuDisplay() {
-    SDL_Color titleColor = {255, 0, 0};
+    SDL_Color titleColor = {255, 0, 0}; //Đen đặc
     SDL_Surface* titleSurface = TTF_RenderText_Solid(fontbrick, "TANKWAR", titleColor);
     titleTexture = SDL_CreateTextureFromSurface(renderer, titleSurface);
     titleRect = {SCREEN_WIDTH / 2 - titleSurface->w / 2, 100, titleSurface->w, titleSurface->h};
@@ -741,7 +819,7 @@ void Game::showMenu() {
     if (menuBackgroundTexture) {
         SDL_RenderCopy(renderer, menuBackgroundTexture, NULL, &bgRect);
     } else {
-        SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+        SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255); // Màu đen đặc
         SDL_RenderClear(renderer);
     }
     // Vẽ title, options, viền...
@@ -957,8 +1035,76 @@ void Game::update() {
     if (isPause) return;
     //Update đạn
     if (player.active) player.updateBullets();
-    if (gameMode == 2 && player2.active) player2.updateBullets();
+    if ((gameMode == 2 || isPvpMode) && player2.active) player2.updateBullets();
+    if (isPvpMode) {
+        // Va chạm đạn Player 1 với Player 2
+        for (auto& bullet : player.bullets) {
+            if (player2.active && bullet.active && SDL_HasIntersection(&bullet.rect, &player2.rect)) {
+                bullet.active = false;
+                player2.hp--;
+                if (player2.hp <= 0) {
+                    player2.active = false;
+                    winnerName = "Player 1 Wins!";
+                    showingWinner = true;
+                    Explosions.emplace_back(renderer, player2.rect.x, player2.rect.y);
+                }
+            }
+        }
 
+        // Va chạm đạn Player 2 với Player 1
+        for (auto& bullet : player2.bullets) {
+            if (player.active && bullet.active && SDL_HasIntersection(&bullet.rect, &player.rect)) {
+                bullet.active = false;
+                player.hp--;
+                if (player.hp <= 0) {
+                    player.active = false;
+                    winnerName = "Player 2 Wins!";
+                    showingWinner = true;
+                    Explosions.emplace_back(renderer, player.rect.x, player.rect.y);
+                }
+            }
+        }
+        // Va chạm đạn với tường trong PvP
+        for (auto& bullet : player.bullets) {
+            for (auto& wall : walls) {
+                if (wall.active && SDL_HasIntersection(&bullet.rect, &wall.rect)) {
+                    wall.active = false;
+                    bullet.active = false;
+                    wallExplosions.emplace_back(renderer, wall.rect.x, wall.rect.y);
+                    break;
+                }
+            }
+        }
+        for (auto& bullet : player2.bullets) {
+            for (auto& wall : walls) {
+                if (wall.active && SDL_HasIntersection(&bullet.rect, &wall.rect)) {
+                    wall.active = false;
+                    bullet.active = false;
+                    wallExplosions.emplace_back(renderer, wall.rect.x, wall.rect.y);
+                    break;
+                }
+            }
+        }
+         // Va chạm với đá
+        for (auto& bullet : player.bullets) {
+            for (auto& stone : stones) {
+                if (stone.active && SDL_HasIntersection(&bullet.rect, &stone.rect)) {
+                    bullet.active = false;
+                    break;
+                }
+            }
+        }
+        for (auto& bullet : player2.bullets) {
+            for (auto& stone : stones) {
+                if (stone.active && SDL_HasIntersection(&bullet.rect, &stone.rect)) {
+                    bullet.active = false;
+                    break;
+                }
+            }
+        }
+
+
+    } else { // Game bình thường
     //Cử chỉ của enemy
     spawnEnemies();
     for (auto& enemy : enemies) {
@@ -1437,6 +1583,7 @@ void Game::update() {
             Explosions.emplace_back(renderer, base.rect.x, base.rect.y);
             over = true;
         }
+    }
 };
 
 ////////////////////////////
@@ -1498,7 +1645,7 @@ void Game::render() {
     if(player2.active == true){
         player2.render(renderer);
     }
-    if(base.active == true){
+    if(base.active == true && !isPvpMode) {
         base.render(renderer);
     }
     for (auto& enemy : enemies) enemy.render(renderer);
@@ -1510,12 +1657,14 @@ void Game::render() {
         tankex.render(renderer);
     }
     SDL_RenderCopy(renderer, levelTextTexture, NULL, &levelTextRect);
-    SDL_RenderCopy(renderer, scoreTexture, NULL, &scoreRect);
+    if (!isPvpMode) SDL_RenderCopy(renderer, scoreTexture, NULL, &scoreRect);
     SDL_RenderCopy(renderer, hpTexture,NULL, &hpRect);
-    if (gameMode == 2 && hp2Texture) SDL_RenderCopy(renderer, hp2Texture, NULL, &hp2Rect);
-    SDL_RenderCopy(renderer, baseHpTexture, NULL, &baseHpRect);
-    SDL_RenderCopy(renderer, enemySpawmTexture, NULL, &enemySpawnRect);
-    // Thêm mới;
+    if ((gameMode == 2 || isPvpMode) && hp2Texture) SDL_RenderCopy(renderer, hp2Texture, NULL, &hp2Rect);
+    if (!isPvpMode) {
+        SDL_RenderCopy(renderer, baseHpTexture, NULL, &baseHpRect);
+        SDL_RenderCopy(renderer, enemySpawmTexture, NULL, &enemySpawnRect);
+    }
+
     if (level == 36 && bossActive && boss.active) {
         if (bossHpLabelTexture) {
             SDL_RenderCopy(renderer, bossHpLabelTexture, NULL, &bossHpLabelRect);
@@ -1553,6 +1702,9 @@ void Game::run() {
         else if (showingRanking) {
             showRanking();
         }
+         else if (showingWinner) {
+            showWinnerMessage();
+        }
         else if (over) {
                 SDL_Delay(1000);
                 showGameOverMessage();
@@ -1564,7 +1716,7 @@ void Game::run() {
         else {
         handleEvents();
         update();
-        updateScoreDisplay();
+        if (!isPvpMode) updateScoreDisplay();
         updateHpDisplay();
         if (bossActive) updateBossHpDisplay();
         render();
