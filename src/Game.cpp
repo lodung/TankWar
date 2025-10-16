@@ -43,6 +43,10 @@ Game::Game() {
     } else {
         Mix_PlayMusic(backGroundMusic, -1);
     }
+     bossMusic = Mix_LoadMUS("sound/bossTheme.mp3");
+    if (!bossMusic) {
+        std::cerr << "Failed to load boss music! Error: " << Mix_GetError() << std::endl;
+    }
     font = TTF_OpenFont("ARIAL.ttf", 30);
     if (!font) {
         std::cerr << "Failed to load font! Error: " << TTF_GetError() << std::endl;
@@ -129,6 +133,11 @@ void Game::resetGame() {
     lastSpawnTime = 0;
     bossActive = false;
     boss.active = false;
+    if (bossMusicPlaying) {
+        Mix_HaltMusic();
+        Mix_PlayMusic(backGroundMusic, -1);
+        bossMusicPlaying = false;
+    }
 
     if (isPvpMode) {
         level = 36;
@@ -142,7 +151,7 @@ void Game::resetGame() {
         boss.active = false;
         demslg1 = 0;
     } else {
-        level = 35;
+        level = 1;
         player = PlayerTank(5 * TILE_SIZE, 13 * TILE_SIZE, renderer, "image/Tank.png", shootSound);
         player.hp = 3;
         player2 = PlayerTank(9 * TILE_SIZE, 13 * TILE_SIZE, renderer, "image/Player2.png", shootSound);
@@ -158,6 +167,11 @@ void Game::resetGame() {
                                 renderer);
                 boss.hp = isHardMode ? 30 : 20;
                 updateBossHpDisplay();
+                if (bossMusic) {
+                    Mix_HaltMusic();
+                    Mix_PlayMusic(bossMusic, -1);
+                    bossMusicPlaying = true;
+                }
             } else {
                 spawnEnemies();
             }
@@ -174,18 +188,6 @@ void Game::resetGame() {
     ices.clear();
     dangcap = std::to_string(level);
     generateWalls();
-    if (!isPvpMode) {
-        if (level == 36) {
-            bossActive = true;
-            boss = BossTank(SCREEN_WIDTH / 2 - TILE_SIZE * 5,
-                            SCREEN_HEIGHT / 2 - TILE_SIZE * 3,
-                            renderer);
-            boss.hp = isHardMode ? 30 : 20;
-            updateBossHpDisplay();
-        } else {
-            spawnEnemies();
-        }
-    }
     updateLevelDisplay();
     updateScoreDisplay();
     updateHpDisplay();
@@ -631,7 +633,13 @@ void Game::showGameOverMessage() {
     SDL_DestroyTexture(infoTexture);
 
     SDL_Delay(2900);
-    Mix_ResumeMusic();
+    if (bossMusicPlaying) {
+        Mix_HaltMusic();
+        Mix_PlayMusic(backGroundMusic, -1);
+        bossMusicPlaying = false;
+    } else {
+        Mix_ResumeMusic();
+    }
 }
 void Game::showWinMessage() {
     Mix_PauseMusic();
@@ -673,7 +681,13 @@ void Game::showWinMessage() {
     SDL_DestroyTexture(infoTexture);
 
     SDL_Delay(4500);
-    Mix_ResumeMusic();
+    if (bossMusicPlaying) {
+        Mix_HaltMusic();
+        Mix_PlayMusic(backGroundMusic, -1);
+        bossMusicPlaying = false;
+    } else {
+        Mix_ResumeMusic();
+    }
 }
 void Game::showWinnerMessage() {
     Mix_PauseMusic();
@@ -1174,7 +1188,7 @@ void Game::update() {
    if (level == 36 && bossActive && boss.active) {
     // Boss bắn và di chuyển đạn
     boss.shoot(renderer);
-    boss.updateBullets();
+    boss.update();
 
     // Va chạm đạn Boss với Tường
     for (auto& wall : walls) {
@@ -1519,37 +1533,49 @@ void Game::update() {
         enemiesSpawned = 0;
         lastSpawnTime = 0;
         level++;
-        // Nếu level trên 36 thì sẽ win luôn
-
-
-    if (level == 36 && !bossActive) {
-        bossActive = true;
-        boss = BossTank(
-            SCREEN_WIDTH / 2 - TILE_SIZE*5,
-            SCREEN_HEIGHT / 2 - TILE_SIZE*3,
-            renderer
-        );
-        boss.hp = isHardMode ? 30 : 20;
-        // Cập nhật lại hiển thị level và máu boss (nếu có)
-        updateLevelDisplay();
-        updateBossHpDisplay();
-        int oldHp = player.hp;
-        player = PlayerTank(5 * TILE_SIZE, 13 * TILE_SIZE, renderer, "image/Tank.png",shootSound);
-        player.hp = (oldHp > 0) ? oldHp : 1;
-        if (gameMode == 2) {
-            int oldHp2 = player2.hp;
-            player2 = PlayerTank(9 * TILE_SIZE, 13 * TILE_SIZE, renderer, "image/Player2.png",shootSound);
-            player2.hp = (oldHp2 > 0) ? oldHp2 : 1;
+        if (level <= 36) {
+            showLevelUpMessage();
+        } else {
+            if (bossMusic) {
+                Mix_HaltMusic();
+                Mix_PlayMusic(bossMusic, -1);
+                bossMusicPlaying = true;
+            }
         }
-        demslg1 = 0;
-        tocdo1 = 4;
-        tocdo2 = 4;
-        player.bullets.clear();
-        wallExplosions.clear();
-        generateWalls();
-        updateScoreDisplay();
-        return;
-    }
+
+        if (level == 36 && !bossActive) {
+            bossActive = true;
+            boss = BossTank(
+                SCREEN_WIDTH / 2 - TILE_SIZE*5,
+                SCREEN_HEIGHT / 2 - TILE_SIZE*3,
+                renderer
+            );
+            boss.hp = isHardMode ? 30 : 20;
+            // Cập nhật lại hiển thị level và máu boss (nếu có)
+            updateLevelDisplay();
+            updateBossHpDisplay();
+             if (bossMusic) {
+                Mix_HaltMusic();
+                Mix_PlayMusic(bossMusic, -1);
+                bossMusicPlaying = true;
+            }
+            int oldHp = player.hp;
+            player = PlayerTank(5 * TILE_SIZE, 13 * TILE_SIZE, renderer, "image/Tank.png",shootSound);
+            player.hp = (oldHp > 0) ? oldHp : 1;
+            if (gameMode == 2) {
+                int oldHp2 = player2.hp;
+                player2 = PlayerTank(9 * TILE_SIZE, 13 * TILE_SIZE, renderer, "image/Player2.png",shootSound);
+                player2.hp = (oldHp2 > 0) ? oldHp2 : 1;
+            }
+            demslg1 = 0;
+            tocdo1 = 4;
+            tocdo2 = 4;
+            player.bullets.clear();
+            wallExplosions.clear();
+            generateWalls();
+            updateScoreDisplay();
+            return;
+        }
 
         //Nếu level dưới bằng 36 sẽ levelup
         if (level <=35 ) showLevelUpMessage();
@@ -1846,6 +1872,7 @@ void Game::updateRankingDisplay() {
 // Deconstructor~~
 Game::~Game() {
     Mix_FreeMusic(backGroundMusic);
+    Mix_FreeMusic(bossMusic);
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
     SDL_Quit();

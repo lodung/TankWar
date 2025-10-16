@@ -55,6 +55,8 @@ public:
     TTF_Font* fontLevelUp;
     SDL_Texture* startScreenTexture = nullptr;
     Mix_Music* backGroundMusic;
+    Mix_Music* bossMusic;
+    bool bossMusicPlaying = false;
     SDL_Window* window;
     SDL_Renderer* renderer;
     SDL_Texture* backgroundTexture = nullptr;

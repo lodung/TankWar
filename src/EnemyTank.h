@@ -33,6 +33,7 @@ class BossTank {
 public:
     int x, y;
     int hp;
+    double angle = 0.0;
     SDL_Rect rect;
     SDL_Texture* bossTexture;
     bool active;
@@ -40,10 +41,12 @@ public:
     std::vector<Bullet> bullets;
     Uint32 lastShootTime;
     Uint32 shootCooldown;
+    Uint32 lastRotateTime = 0;
     BossTank(int startX, int startY, SDL_Renderer* renderer);
     BossTank();
     void shoot(SDL_Renderer* renderer);
     void updateBullets();
+    void update();
     void render(SDL_Renderer* renderer);
 };
 #endif

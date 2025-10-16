@@ -2,6 +2,7 @@
 #include <algorithm>
 #include <iostream>
 #include <SDL_image.h>
+#include <cstdlib>
 
 EnemyTank::EnemyTank(int startX, int startY, SDL_Renderer *renderer, int health) {
     moveDelay = 5;
@@ -13,7 +14,7 @@ EnemyTank::EnemyTank(int startX, int startY, SDL_Renderer *renderer, int health)
     dirX = 0;
     dirY = 1;
     active = true;
-
+    calculateAngle();
 }
 
 void EnemyTank::calculateAngle() {
@@ -144,7 +145,9 @@ BossTank::BossTank(int startX, int startY, SDL_Renderer* renderer) {
     hp = 20;
     active = true;
     lastShootTime = 0;
-    shootCooldown = 1000;
+    shootCooldown = 1200;
+    lastRotateTime = 0;
+    angle = 0.0;
     bossTexture = IMG_LoadTexture(renderer, "image/boss.png");
     rect = {x, y, TILE_SIZE*5, TILE_SIZE*5};
 }
@@ -173,7 +176,14 @@ void BossTank::shoot(SDL_Renderer* renderer) {
     lastShootTime = currentTime;
 }
 
-void BossTank::updateBullets() {
+void BossTank::update() {
+    Uint32 currentTime = SDL_GetTicks();
+
+    if (currentTime - lastRotateTime > 200) { // Cứ 200ms xoay 1 lần
+        int randomAngle = (rand() % 4) * 90;
+        angle = randomAngle;
+        lastRotateTime = currentTime;
+    }
     for (auto& b : bullets) b.move();
     bullets.erase(
         std::remove_if(bullets.begin(), bullets.end(),
@@ -189,8 +199,9 @@ void BossTank::updateBullets() {
 }
 
 void BossTank::render(SDL_Renderer* renderer) {
-    if (active)
-        SDL_RenderCopy(renderer, bossTexture, NULL, &rect);
+    if (active) {
+        SDL_RenderCopyEx(renderer, bossTexture, NULL, &rect, angle, nullptr, SDL_FLIP_NONE);
+    }
     // Hiển thị hp:
     for (auto& bullet : bullets) bullet.render(renderer);
     for (auto& bullet : bulletsS) bullet.render(renderer);
