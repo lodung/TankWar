@@ -495,10 +495,7 @@ void Game::handleGameModeMenuSelection() {
             resetGame();
             showingGameModeMenu = false;
             break;
-        case 1: // Creative
-            std::cout << "Creative mode is still under development." << std::endl;
-            break;
-        case 2: // Back
+        case 1: // Back
             showingGameModeMenu = false;
             menu = true;
             updateMenuDisplay();
@@ -791,7 +788,7 @@ void Game::updateSettingsMenuDisplay() {
     }
 }
 void Game::updateGameModeMenuDisplay() {
-    for (int i = 0; i < 3; i++) {
+    for (int i = 0; i < 2; i++) {
         SDL_Color optionColor = (i == selectedGameModeMenuOption) ? SDL_Color{255, 255, 0} : SDL_Color{255, 255, 255};
 
         SDL_Surface* optionSurface = TTF_RenderText_Solid(font, gameModeMenuOptions[i], optionColor);
@@ -986,11 +983,11 @@ void Game::showGameModeMenu() {
         else if (event.type == SDL_KEYDOWN) {
             switch (event.key.keysym.sym) {
                 case SDLK_UP:
-                    selectedGameModeMenuOption = (selectedGameModeMenuOption - 1 + 3) % 3;
+                    selectedGameModeMenuOption = (selectedGameModeMenuOption - 1 + 2) % 2;
                     updateGameModeMenuDisplay();
                     break;
                 case SDLK_DOWN:
-                    selectedGameModeMenuOption = (selectedGameModeMenuOption + 1) % 3;
+                    selectedGameModeMenuOption = (selectedGameModeMenuOption + 1) % 2;
                     updateGameModeMenuDisplay();
                     break;
                 case SDLK_RETURN:
@@ -1022,7 +1019,7 @@ void Game::showGameModeMenu() {
     SDL_FreeSurface(titleSurface);
     SDL_DestroyTexture(titleTexture);
 
-    for (int i = 0; i < 3; i++) {
+    for (int i = 0; i < 2; i++) {
          if (gameModeMenuOptionsTexture[i]) {
             SDL_RenderCopy(renderer, gameModeMenuOptionsTexture[i], NULL, &gameModeMenuOptionsRect[i]);
          }

@@ -120,9 +120,9 @@ public:
     const char* settingsOptions[3] = {"Music", "Difficulty: Normal", "Back"};
 
     int selectedGameModeMenuOption;
-    SDL_Texture* gameModeMenuOptionsTexture[3];
-    SDL_Rect gameModeMenuOptionsRect[3];
-    const char* gameModeMenuOptions[3] = {"PvP", "Creative", "Back"};
+    SDL_Texture* gameModeMenuOptionsTexture[2];
+    SDL_Rect gameModeMenuOptionsRect[2];
+    const char* gameModeMenuOptions[2] = {"PvP", "Back"};
 
     void resetGame();
     void showWinMessage();

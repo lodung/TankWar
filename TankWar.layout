@@ -2,9 +2,9 @@
 <CodeBlocks_layout_file>
 	<FileVersion major="1" minor="0" />
 	<ActiveTarget name="Debug" />
-	<File name="src\PlayerTank.cpp" open="1" top="0" tabpos="3" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+	<File name="src\Constants.h" open="1" top="0" tabpos="12" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
-			<Cursor1 position="250" topLine="0" />
+			<Cursor1 position="0" topLine="0" />
 		</Cursor>
 	</File>
 	<File name="src\Bullet.cpp" open="1" top="0" tabpos="7" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
@@ -12,19 +12,50 @@
 			<Cursor1 position="451" topLine="0" />
 		</Cursor>
 	</File>
-	<File name="src\PlayerTank.h" open="1" top="0" tabpos="2" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+	<File name="src\Game.cpp" open="1" top="0" tabpos="5" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
-			<Cursor1 position="186" topLine="0" />
+			<Cursor1 position="38195" topLine="93" />
+		</Cursor>
+		<Folding>
+			<Collapse line="7" />
+			<Collapse line="120" />
+			<Collapse line="195" />
+			<Collapse line="243" />
+			<Collapse line="262" />
+			<Collapse line="300" />
+			<Collapse line="402" />
+			<Collapse line="410" />
+			<Collapse line="443" />
+			<Collapse line="463" />
+			<Collapse line="464" />
+			<Collapse line="508" />
+			<Collapse line="523" />
+			<Collapse line="531" />
+			<Collapse line="545" />
+			<Collapse line="559" />
+			<Collapse line="573" />
+			<Collapse line="596" />
+			<Collapse line="640" />
+			<Collapse line="688" />
+			<Collapse line="732" />
+			<Collapse line="740" />
+			<Collapse line="755" />
+			<Collapse line="758" />
+			<Collapse line="776" />
+			<Collapse line="789" />
+			<Collapse line="803" />
+			<Collapse line="850" />
+			<Collapse line="910" />
+		</Folding>
+	</File>
+	<File name="src\EnemyTank.cpp" open="1" top="0" tabpos="9" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="172" topLine="0" />
 		</Cursor>
 	</File>
-	<File name="src\Wall.cpp" open="1" top="0" tabpos="11" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+	<File name="src\PlayerTank.cpp" open="1" top="0" tabpos="3" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
-			<Cursor1 position="0" topLine="0" />
-		</Cursor>
-	</File>
-	<File name="src\Bullet.h" open="1" top="0" tabpos="6" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="0" topLine="8" />
+			<Cursor1 position="250" topLine="0" />
 		</Cursor>
 	</File>
 	<File name="src\EnemyTank.h" open="1" top="0" tabpos="8" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
@@ -32,45 +63,9 @@
 			<Cursor1 position="524" topLine="5" />
 		</Cursor>
 	</File>
-	<File name="src\Game.cpp" open="1" top="0" tabpos="5" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+	<File name="src\PlayerTank.h" open="1" top="0" tabpos="2" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
-			<Cursor1 position="4701" topLine="119" />
-		</Cursor>
-		<Folding>
-			<Collapse line="193" />
-			<Collapse line="241" />
-			<Collapse line="260" />
-			<Collapse line="295" />
-			<Collapse line="400" />
-			<Collapse line="407" />
-			<Collapse line="440" />
-			<Collapse line="461" />
-			<Collapse line="487" />
-			<Collapse line="488" />
-			<Collapse line="509" />
-			<Collapse line="524" />
-			<Collapse line="560" />
-			<Collapse line="574" />
-			<Collapse line="597" />
-			<Collapse line="677" />
-			<Collapse line="721" />
-			<Collapse line="744" />
-			<Collapse line="765" />
-			<Collapse line="778" />
-			<Collapse line="792" />
-			<Collapse line="839" />
-			<Collapse line="899" />
-			<Collapse line="964" />
-		</Folding>
-	</File>
-	<File name="src\Constants.h" open="1" top="0" tabpos="12" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="0" topLine="0" />
-		</Cursor>
-	</File>
-	<File name="src\Game.h" open="1" top="1" tabpos="4" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="1426" topLine="33" />
+			<Cursor1 position="186" topLine="0" />
 		</Cursor>
 	</File>
 	<File name="main.cpp" open="1" top="0" tabpos="1" split="0" active="1" splitpos="0" zoom_1="1" zoom_2="0">
@@ -78,12 +73,22 @@
 			<Cursor1 position="271" topLine="0" />
 		</Cursor>
 	</File>
-	<File name="src\EnemyTank.cpp" open="1" top="0" tabpos="9" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+	<File name="src\Game.h" open="1" top="1" tabpos="4" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
-			<Cursor1 position="172" topLine="0" />
+			<Cursor1 position="3809" topLine="105" />
+		</Cursor>
+	</File>
+	<File name="src\Bullet.h" open="1" top="0" tabpos="6" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="0" topLine="8" />
 		</Cursor>
 	</File>
 	<File name="src\Wall.h" open="1" top="0" tabpos="10" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="0" topLine="0" />
+		</Cursor>
+	</File>
+	<File name="src\Wall.cpp" open="1" top="0" tabpos="11" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
 			<Cursor1 position="0" topLine="0" />
 		</Cursor>
