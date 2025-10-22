@@ -131,6 +131,7 @@ void Game::resetGame() {
     demslg1 = 10;
     enemiesSpawned = 0;
     lastSpawnTime = 0;
+    lastDemonSpawnCheck = SDL_GetTicks();
     bossActive = false;
     boss.active = false;
     if (bossMusicPlaying) {
@@ -148,6 +149,7 @@ void Game::resetGame() {
         player2.active = true;
         base.active = false; // NO BASE
         enemies.clear();
+        demonTanks.clear();
         boss.active = false;
         demslg1 = 0;
     } else {
@@ -180,6 +182,7 @@ void Game::resetGame() {
     tocdo1 = 4;
     tocdo2 = 4;
     enemies.clear();
+    demonTanks.clear();
     wallExplosions.clear();
     walls.clear();
     stones.clear();
@@ -257,6 +260,23 @@ void Game::spawnEnemies() {
         enemies.push_back(EnemyTank(spawnPoint.x, spawnPoint.y, renderer, enemyHp));
         enemiesSpawned++;
         lastSpawnTime = SDL_GetTicks();
+    }
+    //DEMON ah.
+    Uint32 currentTime = SDL_GetTicks();
+    if (currentTime - lastDemonSpawnCheck >= 12000) {
+        lastDemonSpawnCheck = currentTime;
+        if ((rand() % 100) < 27) {
+            int spawnSide = rand() % 2;
+            SDL_Point spawnPoint;
+            if (spawnSide == 0) {
+                spawnPoint = {1 * TILE_SIZE, 1 * TILE_SIZE};
+            } else {
+                spawnPoint = {13 * TILE_SIZE, 1 * TILE_SIZE};
+            }
+            int demonHp = isHardMode ? 2 : 1;
+
+            demonTanks.push_back(DemonTank(spawnPoint.x, spawnPoint.y, renderer, demonHp));
+        }
     }
 }
 
@@ -550,7 +570,7 @@ void Game::updateHpDisplay(){
         baseHpRect = {SCREEN_WIDTH - 200, 190, baseSurface->w, baseSurface->h};
         SDL_FreeSurface(baseSurface);
         SDL_Color text2Color = {255, 50, 50};
-        std::string strEnemy = "Enemies: " + std::to_string(demslg1);
+        std::string strEnemy = "Enemies: " + std::to_string(demslg1 + demonTanks.size());
         SDL_Surface* enemySurface = TTF_RenderText_Solid(font, strEnemy.c_str(),text2Color);
         enemySpawmTexture = SDL_CreateTextureFromSurface(renderer, enemySurface);
         enemySpawnRect = {SCREEN_WIDTH - 200, 230, enemySurface->w, enemySurface->h};
@@ -1134,6 +1154,21 @@ void Game::update() {
         enemy.shoot(renderer);
     }
 
+    for (auto& demon : demonTanks) {
+        PlayerTank* target = nullptr;
+        if (player.active && (!player2.active ||
+            (abs(demon.x - player.x) + abs(demon.y - player.y) <= abs(demon.x - player2.x) + abs(demon.y - player2.y)))) {
+            target = &player;
+        } else if (player2.active) {
+            target = &player2;
+        }
+        if (target) {
+            demon.moveTowardPlayer(target->x, target->y, walls, stones);
+        }
+        demon.updateBullets();
+        demon.shoot(renderer);
+    }
+
     //Va chạm tường
     for (auto& bullet : player.bullets) {
         for (auto& wall : walls) {
@@ -1347,22 +1382,33 @@ void Game::update() {
         }
     }
     for (auto& enemy : enemies){
-    for (auto& bullet : enemy.bullets) {
-        for (auto& stone : stones) {
-            if (stone.active && SDL_HasIntersection(&bullet.rect, &stone.rect)) {
-                bullet.active = false;
-                break;
+        for (auto& bullet : enemy.bullets) {
+            for (auto& stone : stones) {
+                if (stone.active && SDL_HasIntersection(&bullet.rect, &stone.rect)) {
+                    bullet.active = false;
+                    break;
+                }
             }
         }
     }
-}
+
+    for (auto& demon : demonTanks) {
+        for (auto& bullet : demon.bullets) {
+            for (auto& stone : stones) {
+                if (stone.active && SDL_HasIntersection(&bullet.rect, &stone.rect)) {
+                    bullet.active = false;
+                    break;
+                }
+            }
+        }
+    }
 
     //Player đi vào bụi cỏ
     for (auto& bush : bushs) {
-    if (SDL_HasIntersection(&player.rect, &bush.rect)) {
-        break;
+        if (SDL_HasIntersection(&player.rect, &bush.rect)) {
+            break;
+        }
     }
-}
 
     //Player đi vào bùn
     for(auto& ice: ices){
@@ -1394,6 +1440,17 @@ void Game::update() {
                 }
             }
         }
+         for (auto& demon : demonTanks) {
+            if (demon.active && SDL_HasIntersection(&bullet.rect, &demon.rect)) {
+                demon.hp--;
+                bullet.active = false;
+                if (demon.hp <= 0) {
+                    demon.active = false;
+                    Explosions.emplace_back(renderer, demon.rect.x, demon.rect.y);
+                    score += 150;
+                }
+            }
+        }
     }
     for (auto& bullet : player2.bullets) {
         for (auto& enemy : enemies) {
@@ -1405,6 +1462,17 @@ void Game::update() {
                     demslg1--;
                     Explosions.emplace_back(renderer, enemy.rect.x, enemy.rect.y);
                     score +=100;
+                }
+            }
+        }
+         for (auto& demon : demonTanks) {
+            if (demon.active && SDL_HasIntersection(&bullet.rect, &demon.rect)) {
+                demon.hp--;
+                bullet.active = false;
+                if (demon.hp <= 0) {
+                    demon.active = false;
+                    Explosions.emplace_back(renderer, demon.rect.x, demon.rect.y);
+                    score += 150;
                 }
             }
         }
@@ -1423,26 +1491,62 @@ void Game::update() {
             }
         }
     }
+    for (auto& demon : demonTanks) {
+        for (auto& bullet : demon.bullets) {
+            for (auto& wall : walls) {
+                if (wall.active && SDL_HasIntersection(&bullet.rect, &wall.rect)) {
+                    wallExplosions.emplace_back(renderer, wall.rect.x, wall.rect.y);
+                    wall.active = false;
+                    bullet.active = false;
+                    break;
+                }
+            }
+        }
+    }
     for (auto& enemy : enemies) {
         for (auto& bullet : enemy.bullets) {
             if (SDL_HasIntersection(&bullet.rect, &player.rect)) {
                 player.hp--;
                 bullet.active = false;
                 if(player.hp <= 0) {
-                Explosions.emplace_back(renderer, player.rect.x, player.rect.y);
-                player.active = false;
-                player.rect = {0,0,0,0};
+                    Explosions.emplace_back(renderer, player.rect.x, player.rect.y);
+                    player.active = false;
+                    player.rect = {0,0,0,0};
                 }
             }else if(SDL_HasIntersection(&bullet.rect, &player2.rect)){
                 player2.hp--;
                 bullet.active = false;
                 if(player2.hp <= 0) {
-                Explosions.emplace_back(renderer, player2.rect.x, player2.rect.y);
-                player2.active = false;
-                player2.rect = {0,0,0,0};
+                    Explosions.emplace_back(renderer, player2.rect.x, player2.rect.y);
+                    player2.active = false;
+                    player2.rect = {0,0,0,0};
                 }
             }
         }
+
+    }
+
+     for (auto& demon : demonTanks) {
+        for (auto& bullet : demon.bullets) {
+            if (player.active && SDL_HasIntersection(&bullet.rect, &player.rect)) {
+                player.hp--;
+                bullet.active = false;
+                if (player.hp <= 0) {
+                    Explosions.emplace_back(renderer, player.rect.x, player.rect.y);
+                    player.active = false;
+                    player.rect = {0,0,0,0};
+                }
+            } else if (player2.active && SDL_HasIntersection(&bullet.rect, &player2.rect)) {
+                player2.hp--;
+                bullet.active = false;
+                if (player2.hp <= 0) {
+                    Explosions.emplace_back(renderer, player2.rect.x, player2.rect.y);
+                    player2.active = false;
+                    player2.rect = {0,0,0,0};
+                }
+            }
+        }
+    }
 
         if (gameMode == 1 && player.active == false){
             over = true;
@@ -1453,7 +1557,6 @@ void Game::update() {
             Explosions.emplace_back(renderer, base.rect.x, base.rect.y);
             over = true;
         }
-    }
 
     //Va chạm với base
     for (auto& enemy : enemies ){
@@ -1463,6 +1566,17 @@ void Game::update() {
                     bullet.active = false;
                 if(base.hp == 0){
                 base.active = false;
+                }
+            }
+        }
+    }
+    for (auto& demon : demonTanks) {
+        for (auto& bullet : demon.bullets) {
+            if (base.active && SDL_HasIntersection(&bullet.rect, &base.rect)) {
+                base.hp--;
+                bullet.active = false;
+                if (base.hp == 0) {
+                    base.active = false;
                 }
             }
         }
@@ -1496,6 +1610,15 @@ void Game::update() {
         ),
         enemies.end()
     );
+    demonTanks.erase(
+
+        std::remove_if(
+            demonTanks.begin(),
+            demonTanks.end(),
+            [](DemonTank& d) { return !d.active; }
+        ),
+        demonTanks.end()
+    );
 
     //Xử lý vụ nổ
     wallExplosions.erase(
@@ -1526,9 +1649,10 @@ void Game::update() {
     }
 
     //Kiểm tra điều kiện thắng
-    if (enemiesSpawned >= 10 && enemies.empty()) {
+    if (enemiesSpawned >= 10 && enemies.empty() && demonTanks.empty()) {
         enemiesSpawned = 0;
         lastSpawnTime = 0;
+        lastDemonSpawnCheck = SDL_GetTicks();
         level++;
         if (level <= 36) {
             showLevelUpMessage();
@@ -1672,6 +1796,7 @@ void Game::render() {
         base.render(renderer);
     }
     for (auto& enemy : enemies) enemy.render(renderer);
+    for (auto& demon : demonTanks) demon.render(renderer);
     for (auto& bush : bushs) bush.render(renderer);
     for (auto& explosion : wallExplosions) {
         explosion.render(renderer);

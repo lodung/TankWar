@@ -29,6 +29,30 @@ public:
     void render(SDL_Renderer* renderer);
 };
 
+class DemonTank {
+public:
+    int x, y;
+    int hp;
+    int dirX, dirY;
+    double angle;
+    int moveDelay;
+    Uint32 lastShootTime = 0;
+    Uint32 shootCooldown = 1000;
+    SDL_Rect rect;
+    SDL_Texture *demonTexture;
+    bool active;
+    vector<Bullet> bullets;
+
+    DemonTank(int startX, int startY, SDL_Renderer* renderer, int health = 1);
+    void moveTowardPlayer(int playerX, int playerY, const vector<Wall>& walls, const vector<Stone>& stones);
+    bool canMove(int newX, int newY, const vector<Wall>& walls, const vector<Stone>& stones);
+    void applyMove(int dx, int dy);
+    void calculateAngle();
+    void shoot(SDL_Renderer* renderer);
+    void updateBullets();
+    void render(SDL_Renderer* renderer);
+};
+
 class BossTank {
 public:
     int x, y;

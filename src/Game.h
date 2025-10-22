@@ -70,6 +70,7 @@ public:
     PlayerTank player;
     PlayerTank player2;
     std::vector<EnemyTank> enemies;
+    std::vector<DemonTank> demonTanks;
     int level;
     bool menu;
     int tocdo1,tocdo2;
@@ -86,6 +87,7 @@ public:
     SDL_Point SPAWN_POINT = {1 * TILE_SIZE, 1 * TILE_SIZE};
     int enemiesSpawned;
     Uint32 lastSpawnTime;
+    Uint32 lastDemonSpawnCheck;
     void handleMouseEvents(SDL_Event& event);
     bool isMouseInRect(int mouseX, int mouseY, const SDL_Rect& rect);
     void handleMenuSelection();
