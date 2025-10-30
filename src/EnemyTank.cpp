@@ -134,7 +134,7 @@ DemonTank::DemonTank(int startX, int startY, SDL_Renderer *renderer, int health)
     x = startX;
     y = startY;
     hp = health;
-    demonTexture = IMG_LoadTexture(renderer, "image/newAgent.png");
+    demonTexture = IMG_LoadTexture(renderer, "image/Tank2.png");
     rect = {x, y, TILE_SIZE, TILE_SIZE};
     dirX = 0;
     dirY = 1;

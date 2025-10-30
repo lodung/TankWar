@@ -145,7 +145,7 @@ void Game::resetGame() {
         player = PlayerTank(2 * TILE_SIZE, 4 * TILE_SIZE, renderer, "image/Tank.png", shootSound);
         player.hp = 5; // PvP có nhiều máu hơn
         player2 = PlayerTank(12 * TILE_SIZE + 20 , 11 * TILE_SIZE, renderer, "image/Player2.png", shootSound);
-        player2.hp = 5; // Yes sir
+        player2.hp = 5; // Yes
         player2.active = true;
         base.active = false; // NO BASE
         enemies.clear();

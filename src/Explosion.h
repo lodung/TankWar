@@ -1,10 +1,21 @@
 class wallExplosion {
 public:
+    SDL_Texture* explosionTexture = nullptr;
+
+    SDL_Rect dstRect;
+    SDL_Rect srcRect;
+
+    Uint32 startTime;
+    Uint32 duration;
+    int frameCount;
+    int currentFrame;
+    int frameHeight;
+    int frameDelay;
     wallExplosion(SDL_Renderer* renderer, int x, int y)
         : startTime(SDL_GetTicks()), duration(500), frameCount(5), currentFrame(0), frameHeight(30)
     {
         explosionTexture = IMG_LoadTexture(renderer, "image/wallExplosion.png");
-           dstRect = { x, y,  TILE_SIZEm,  TILE_SIZEm };
+           dstRect = { x, y,  TILE_SIZEm,  TILE_SIZEm }; // Chỉnh scale vụ nổ
         srcRect = { 0, 0,  30,  30 };
 
         frameDelay = duration / frameCount;
@@ -28,21 +39,18 @@ public:
     bool isFinished() const {
         return SDL_GetTicks() - startTime >= duration;
     }
-private:
+};
+class Explosion {
+public:
     SDL_Texture* explosionTexture = nullptr;
-
     SDL_Rect dstRect;
     SDL_Rect srcRect;
-
     Uint32 startTime;
     Uint32 duration;
     int frameCount;
     int currentFrame;
     int frameHeight;
     int frameDelay;
-};
-class Explosion {
-public:
     Explosion(SDL_Renderer* renderer, int x, int y)
         : startTime(SDL_GetTicks()), duration(500), frameCount(5), currentFrame(0), frameHeight(30)
     {
@@ -80,16 +88,5 @@ public:
         return explosionSound;
     }
      Mix_Chunk* explosionSound = nullptr;
-private:
-    SDL_Texture* explosionTexture = nullptr;
 
-    SDL_Rect dstRect;
-    SDL_Rect srcRect;
-
-    Uint32 startTime;
-    Uint32 duration;
-    int frameCount;
-    int currentFrame;
-    int frameHeight;
-    int frameDelay;
 };
